@@ -161,3 +161,4 @@ cython_debug/
 /.vs/FeneTrout
 /fenetrout.out
 /ensemblestrands.csv
+/testfenetrout.out
