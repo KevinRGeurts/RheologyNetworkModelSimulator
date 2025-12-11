@@ -25,6 +25,12 @@
     <Compile Include="fenetroutsim.py" />
     <Compile Include="fenetroutsim_tests.py" />
     <Compile Include="main.py" />
+    <Compile Include="qplot.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="qplot_tests.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="strand.py" />
     <Compile Include="strand_tests.py" />
   </ItemGroup>
@@ -38,6 +44,13 @@
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
       <Architecture>X64</Architecture>
     </Interpreter>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Documentation\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Documentation\Developer_Documentation.md" />
+    <Content Include="Documentation\fenetrout.f" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

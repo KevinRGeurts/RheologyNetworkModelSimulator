@@ -1,3 +1,7 @@
+# standard imports
+from array import array
+
+# local imports
 from fenetroutsim import *
 
 if __name__ == '__main__':
@@ -20,8 +24,8 @@ if __name__ == '__main__':
 
     sim_input = {}
     sim_input['gamdot'] = 1
-    sim_input['begstrand'] = 10000
-    sim_input['eps'] = 0.01
+    sim_input['begstrand'] = 10000 # Should be 10000 for accurate results
+    sim_input['eps'] = 0.001 # Should be 0.001 for accurate results
     sim_input['steps'] = int(5 / sim_input['eps'])
     sim_input['b'] = 100.0  # All results in J. Chem. Phys article
     sim_input['n'] = 2  # Don't change
@@ -30,9 +34,9 @@ if __name__ == '__main__':
 
     sim = FeneTroutSim(sim_input)
 
-    sim.run_sim()
+    so=sim.run_sim()
 
-    # import pandas as pd
+    # Print some output from the simulation
 
-    # df = pd.read_csv(outfile)
+    print(so['trouton 1 plot'])
 

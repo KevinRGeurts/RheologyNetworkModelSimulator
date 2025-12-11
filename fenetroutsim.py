@@ -1,6 +1,11 @@
-from strand import *
+# Standard imports
 from copy import deepcopy
 from math import log, copysign
+from array import array
+
+# Local imports
+from strand import *
+from qplot import TextPlot
 
 
 class FeneTroutSim:
@@ -65,6 +70,10 @@ class FeneTroutSim:
 
         q_ave, piYX, trout1, trout2 = 0.0, 0.0, 0.0, 0.0
 
+        # Arrays to hold all values of trout1 and time for plotting later
+        trout1_vals = array('f')
+        time_vals = array('f')
+        
         # For each time step of the simulation ...
 
         for ts in range(1, self.sim_input['steps']):
@@ -98,7 +107,7 @@ class FeneTroutSim:
 
                     we.append(ns)
 
-            # Print some output
+            # Compute some output values for this time step
 
             q_ave = ensemble_q_ave(we)
             stress = ensemble_stress(we, self.sim_input['b'])
@@ -106,12 +115,18 @@ class FeneTroutSim:
             trout1 = (stress[2] - stress[0]) / self.sim_input['begstrand'] / self.sim_input['gamdot']
             trout2 = (stress[1] - stress[0]) / self.sim_input['begstrand'] / self.sim_input['gamdot']
 
+            # Print some output to the stdout
+            
             print('Step: %i, Strands: %i, <Q>: %f, piYX: %f, trouton_1: %f, trouton_2: %f\n' % (
             ts, len(we), q_ave, piYX, trout1, trout2))
 
             # Write some output to a file
 
             out_f.write('%i, %i, %f, %f, %f, %f\n' % (ts, len(we), q_ave, piYX, trout1, trout2))
+
+            # Append the trout1 value to the list for plotting later
+            trout1_vals.append(trout1)
+            time_vals.append(ts * self.sim_input['eps'])
 
         out_f.close()
 
@@ -123,6 +138,11 @@ class FeneTroutSim:
         results['trouton 1'] = trout1
         results['trouton 2'] = trout2
         results['Qave'] = q_ave
+        symbol=array('u')
+        symbol.append('O')
+        results['trouton 1 plot'] = TextPlot(ncur=1, npts=len(trout1_vals), x=[time_vals], y=[trout1_vals],
+                                             symbol=symbol, titl1='FENE Network Start-up of Elongational Flow Simulation',
+                                             titl2='O: Elongational Viscosity vs Time')
 
         return results
 
