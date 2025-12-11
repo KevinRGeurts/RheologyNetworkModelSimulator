@@ -1,10 +1,31 @@
+"""
+This module defines the class Strand, which represents a FENE (finitely extensible non-linear elastic) strand in a network model for polymer melt rheology.
+
+Exported classes:
+    Strand: Class to represent a FENE strand in a polymer network.
+
+Exported functions:
+    beta: Function to compute the mathematical beta function.
+    generate_eq_ensemble: Function to create an equilibrium ensemble of strands.
+    write_ensemble_to_file: Function to write an ensemble of strands to a CSV file.
+    ensemble_stress: Function to compute the total stress tensor components for an ensemble of strands.
+    ensemble_q_ave: Function to compute the average strand length in an ensemble.
+
+Exported exceptions:
+    None
+"""
+
+# Standard imports
 from math import pow, sqrt, exp, lgamma, pi, sin, cos
 from random import uniform
 
 
 class Strand:
     """
-    Represent a FENE (finitely extensible non-linear elastic) strand in a network model.
+    Represent a FENE (finitely extensible non-linear elastic) strand in a network model for polymer melt rheology.
+
+    Reference: Geurts, K.R. and L.E. Wedgewood, "A finitely extensible network strand model with nonlinear backbone
+    forces and entanglement kinetics," J. Chem. Phys., 1-January-1997, 106(1), pp. 339-346.
 
     Non-affine Motion prefactor is  1-(Q/Qo)^n. No strand may exceed the nondimensional length of one.
     The FENE force law is used. The loss rate is (1/Lambdao)(1)/(1-(Q/Qo)^n*m).
@@ -24,7 +45,8 @@ class Strand:
         :param qy: Internal Y-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
         :param qz: Internal Z-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
         """
-        # TODO: Enforce that Strand length should not exceed 1
+        # Enforce that Strand length should not exceed 1.0
+        assert(sqrt(qx*qx + qy*qy + qz*qz) <= 1.0)
         self.qx=qx
         self.qy=qy
         self.qz=qz
@@ -44,6 +66,8 @@ class Strand:
         :param mm: mm*n is exponent on (Q/Qo) in the loss rate. mm should be equal to 1, as float
         :return: Loss rate for strand, multiplied by the loss rate constant, Lambdao, as float
         """
+        assert(n==2.0)
+        assert(mm==1.0)
         return 1.0 / (1.0 - pow(sqrt(self.str_len_sqr()), (mm * n)))
 
     def loss_prob(self, eps, n=2.0, mm=1.0):
@@ -55,6 +79,8 @@ class Strand:
         :param mm: mm*n is exponent on (Q/Qo) in the loss rate. mm should be equal to 1, as float
         :return: Probability of the Strand disentangling from the network during a time step of length eps, as float
         """
+        assert(n==2.0)
+        assert(mm==1.0)
         return 1.0 - exp(-1.0 * self.loss_rate(n, mm) * eps)
 
     # XX component of total stress tensor
@@ -114,8 +140,8 @@ def beta(z, w):
     return exp(lgamma(z)+lgamma(w)-lgamma(z+w))
 
 
-# Generate and equilibrium ensemble of strands, returned as a list, using a rejection technique
-#             b               The FENE Parameter (HQo^2/kT)
+# TODO: Consider making this a method of Strand class.
+# Generate an equilibrium ensemble of strands, returned as a list, using a rejection technique
 def generate_eq_ensemble(n=1, b=1.0):
     """
     Create an ensemble of size n number of strands, where the distribution of strand lengths will
@@ -146,6 +172,7 @@ def generate_eq_ensemble(n=1, b=1.0):
     return e
 
 
+# TODO: Consider making this a method of Strand class.
 def write_ensemble_to_file(e, filename):
     """
     Write a CSV formatted text file with the internal coordinates and length of each strand  in list.
@@ -164,7 +191,7 @@ def write_ensemble_to_file(e, filename):
     f.close()
 
 
-# Compute stress component members for ensemble
+# TODO: Consider making this a method of Strand class.
 def ensemble_stress(e, b):
     """
     Compute the components of the total stress tensor for the network,
@@ -186,7 +213,7 @@ def ensemble_stress(e, b):
     return (piXX, piYY, piZZ, piYX)
 
 
-# Compute average strand length for the ensemble
+# TODO: Consider making this a method of Strand class.        
 def ensemble_q_ave(e):
     """
     Compute the average length of a strand in the network ensemble, divided by the maximum strand length.

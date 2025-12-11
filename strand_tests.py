@@ -4,6 +4,9 @@ from strand import Strand, beta, generate_eq_ensemble, ensemble_stress, ensemble
 from math import log, exp
 
 class MyTestCase(unittest.TestCase):
+    def test_strand_init_to_long(self):
+        self.assertRaises(AssertionError, Strand, 1.0, 1.0, 1.0)
+
     def test_str_len_sqr(self):
         exp_val = 0.14
         s = Strand(0.1, 0.2, 0.3)

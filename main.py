@@ -1,8 +1,23 @@
+"""
+This module's __main__ collects simulation input interactively from the user, executes a FeneTroutSim, and prints some results.
+
+Exported classes:
+    None
+
+Exported functions:
+    __main__: Collects input, runs simulation, prints results output
+
+Exported exceptions:
+    None
+"""
+
+
 # standard imports
-from array import array
+
 
 # local imports
 from fenetroutsim import *
+
 
 if __name__ == '__main__':
     # Get input from the user

@@ -1,10 +1,23 @@
 """
-This module defines the function qplot, which creates a simple ASCII plot.
+This module defines the class TextPlot, which represents a simple ASCII scatter plot.
+
+Exported classes:
+    TextPlot: Class to create a simple ASCII scatter plot.
+
+Exported functions:
+    qplot: Function to print a simple ASCII plot to stdout.
+
+Exported exceptions:
+    None
 """
 
 # stadard imports
 from array import array
 
+
+# TODO: (1) Add axis labels that print as a title line of the form: 'x (units) vs y (units)'
+# TODO: (2) Add a plot legend, with one string per curve, showing the symbol and a description of the curve, to be
+# printed as a title line.
 class TextPlot():
     """
     Class to create a simple ASCII plot.
@@ -15,6 +28,7 @@ class TextPlot():
     """
     def __init__(self, ncur=1, npts=10, x=None, y=None, symbol=None, titl1='', titl2=''):
         """
+        Provide all of the data needed to create the ASCII plot.
         :parameter ncur: Number of curves to plot, int
         :parmaeter npts: Number of points per curve, int
         :parameter x: X-coordinates of points, list of ncur arrays of npts floats, [array('f') ... array('f')]
@@ -23,13 +37,27 @@ class TextPlot():
         :parameter titl1: Title line 1, string
         :parameter titl2: Title line 2, string
         """
-        self._ncur=ncur
-        self._npts=npts
+        assert(int(ncur)>0)
+        self._ncur=int(ncur)
+        assert(int(npts)>0)
+        self._npts=int(npts)
+        assert(type(x)==list)
+        # TODO: Strictly speaking, if the code in _qplot() is changed, not all curves would have to have the same number of points.
+        # Alhough the number of x-points and y-points for each curve would still have to match.
+        for curve in x:
+            assert(type(curve)==array)
+            assert(len(curve)==int(self._npts))
         self._x=x
+        assert(type(y)==list)
+        for curve in y:
+            assert(type(curve)==array)
+            assert(len(curve)==int(self._npts))
         self._y=y
+        assert(type(symbol)==array)
+        assert(len(symbol)==int(self._ncur))
         self._symbol=symbol
-        self._titl1=titl1
-        self._titl2=titl2
+        self._titl1=str(titl1)
+        self._titl2=str(titl2)
 
     def _qplot(self):
         """
