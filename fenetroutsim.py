@@ -77,6 +77,7 @@ class FeneTroutSim:
 
         # The equilibrium ensemble is used for selecting new strands to join the network
         ee = generate_eq_ensemble(self.sim_input['begstrand'], self.sim_input['b'])
+        # TODO: Fix so that uses any path provided by sim_input['outfil']
         write_ensemble_to_file(ee, 'ensemblestrands.csv')
 
         # Copy the equilibrium ensemble as the initial working ensemble
