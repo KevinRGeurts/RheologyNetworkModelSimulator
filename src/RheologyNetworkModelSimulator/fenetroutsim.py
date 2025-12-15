@@ -8,6 +8,7 @@ forces and entanglement kinetics," J. Chem. Phys., 1-January-1997, 106(1), pp. 3
 
 Exported classes:
     FeneTroutSim: Class simulates a FENE (finitely extensible non-linear elastic) network model in elongational viscometric flow.
+    FeneTroutSimOut: Class attributes are the results of FeneTroutSim.run_sim() method.
 
 Exported functions:
     None
@@ -30,7 +31,7 @@ from qplot import TextPlot
 
 class FeneTroutSimOut:
     """
-    A class to accumulate and then return output from FeneTroutSim.run_sim().
+    A class to accumulate (over time steps) and then return time-averaged output from FeneTroutSim.run_sim().
     """
     def __init__(self):
         """
@@ -51,6 +52,7 @@ class FeneTroutSimOut:
     def __str__(self):
         """
         Convert object to str, for example, to print results.
+        :return: Class attributes converted to a string representation, suitable for printing results, as str
         """
         result = f"n/no = {self.n_ave}\nPi-YX = {self.piYX_ave}\ntrout1 = {self.trout1_ave}\ntrout2 = {self.trout2_ave}\nQave = {self.Q_ave}\n\n{self.trout1_plt}\n"
         return result

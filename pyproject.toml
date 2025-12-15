@@ -1,0 +1,35 @@
+[build-system]
+requires = ["pdm-backend >= 2.4.0"]
+build-backend = "pdm.backend"
+
+[tool.pdm.build]
+includes = ["src/RheologyNetworkModelSimulator/*.py"]
+source-includes = ["tests/", "src/RheologyNetworkModelSimulator/Documentation/Developer_Documentation.md", "src/RheologyNetworkModelSimulator/Documentation/fenetrout.f", "src/RheologyNetworkModelSimulator/FeneTrout.sln", "src/RheologyNetworkModelSimulator/FeneTrout.pyproj"]
+
+[project]
+name = "RheologyNetworkModelSimulator"
+version = "1.0.0"
+dependencies = [
+	"UserResponseCollector>=1.0.6",
+]
+authors = [
+  { name="Kevin R. Geurts", email="kevin.r.geurts@gmail.com" },
+]
+description = "RheologyNetworkModelSimulator defines the class FeneTroutSim which simulates a FENE (finitely extensible non-linear elastic) network model in elongational viscometric flow."
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering"
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+keywords = ["console", "desktop", "simulator", "rheology", "network model"]
+
+[project.urls]
+Homepage = "https://github.com/KevinRGeurts/RheologyNetworkModelSimulator"
+Issues = "https://github.com/KevinRGeurts/RheologyNetworkModelSimulator/issues"

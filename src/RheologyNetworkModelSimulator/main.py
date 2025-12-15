@@ -32,7 +32,7 @@ if __name__ == '__main__':
     gamdot = askForFloat('Enter the elongation rate (suggest 1.0)', minimum=0.0)
     begstrand = askForInt('Enter the number of strands in the equilibrium ensemble (suggest 10000)', minimum=1)
     eps = askForFloat('Enter the time step size (suggest 0.001)', minimum=1e-5, maximum=0.1)
-    endt = askForFloat('Enter the end time of the simulation (suggest 5.0)', minimum=10*eps)
+    endt = askForFloat('Enter the end time of the simulation (suggest 5.0). Steady-state results will be averaged over the last quarter of this time.', minimum=10*eps)
     steps = int(endt / eps)
     # Suggested value for b matches all results in J. Chem. Phys. article
     fene_b = askForFloat('Enter the FENE Parameter b (suggest 100.0)', minimum=1.0)

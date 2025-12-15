@@ -6,7 +6,7 @@
     <ProjectGuid>{521a3fe0-76f9-4386-a62a-6f25703e6941}</ProjectGuid>
     <ProjectHome />
     <StartupFile>main.py</StartupFile>
-    <SearchPath />
+    <SearchPath>..\..\tests</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
@@ -14,7 +14,7 @@
     <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
     <TestFramework>unittest</TestFramework>
     <UnitTestPattern>*_tests.py</UnitTestPattern>
-    <UnitTestRootDirectory>.</UnitTestRootDirectory>
+    <UnitTestRootDirectory>..\..\tests</UnitTestRootDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -23,16 +23,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="fenetroutsim.py" />
-    <Compile Include="fenetroutsim_tests.py" />
     <Compile Include="main.py" />
     <Compile Include="qplot.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="qplot_tests.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="strand.py" />
-    <Compile Include="strand_tests.py" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">
