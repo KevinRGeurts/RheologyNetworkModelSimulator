@@ -59,5 +59,5 @@ if __name__ == '__main__':
     so=sim.run_sim()
 
     # Print some output from the simulation
-    print(so['trouton 1 plot'])
+    print(so)
 

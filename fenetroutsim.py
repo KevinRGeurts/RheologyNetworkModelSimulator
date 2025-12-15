@@ -21,10 +21,39 @@ Exported exceptions:
 from copy import deepcopy
 from math import log, copysign
 from array import array
+from unittest import result
 
 # Local imports
 from strand import *
 from qplot import TextPlot
+
+
+class FeneTroutSimOut:
+    """
+    A class to accumulate and then return output from FeneTroutSim.run_sim().
+    """
+    def __init__(self):
+        """
+        n_ave = n/no = Time-averaged, non-dimensional (relative to equilibrium number) number of entangled strands in the network ensemble, int
+        piYX_ave = Time-averaged, non-dimensional YX-component of the total stress tensor, float
+        trout1_ave = Time-averaged, non-dimensional Trouton 1 viscosity, float
+        trout3_ave = Time-averaged, non-dimensional Trouton 2 viscosity, float
+        Q_ave = Time-averaged, non-dimensinal ensemble-average network strand length, float
+        trout1_plt = TextPlot object plot of Trouton 1 viscosity
+        """
+        self.n_ave=0
+        self.piYX_ave=0
+        self.trout1_ave=0
+        self.trout2_ave=0
+        self.Q_ave=0
+        self.trout1_plt=None
+
+    def __str__(self):
+        """
+        Convert object to str, for example, to print results.
+        """
+        result = f"n/no = {self.n_ave}\nPi-YX = {self.piYX_ave}\ntrout1 = {self.trout1_ave}\ntrout2 = {self.trout2_ave}\nQave = {self.Q_ave}\n\n{self.trout1_plt}\n"
+        return result
 
 
 class FeneTroutSim:
@@ -55,20 +84,17 @@ class FeneTroutSim:
         """
         assert(type(si)==dict)
         self.sim_input = si
+        self._time_frac_ss = 0.25 # The fraction of simulation time the simulation is assumed to be at stead state
 
     def run_sim(self):
         """
         Execute the simulation.
-
-        :return: A dictionary of non-dimensional results from the simulation, as follows:
-
-            'n/no' = Number of entangled strands in the network ensemble relative to the equilibrium number, int
-            'piYX' = YX-component of the total stress tensor, float
-            'trouton 1' = Trouton viscosity, float
-            'trouton 2' = Trouton viscosity, float
-            'Qave' = Average length of a strand in the network ensemble, float
-            'trouton 1 plot' = Trouton viscosity plot, qplot.TextPlot object
+        :return: Results from the simulation, as a FeneTroutSimOut object
         """
+        results = FeneTroutSimOut()
+        # Results will be averaged over this length of time
+        t_res = round(self.sim_input['steps']*self._time_frac_ss)
+        
         #  Open a file for writing output from steps
         out_f = open(self.sim_input['outfile'], 'w')
 
@@ -134,20 +160,29 @@ class FeneTroutSim:
             trout1_vals.append(trout1)
             time_vals.append(ts * self.sim_input['eps'])
 
+            # If we are far enough along (that is, in the last 1/3 of the simulation time steps)
+            # to likely be at steady state, store some information into results,
+            # which will later be used to generate time-averaged values
+            if ts >= round(self.sim_input['steps']*(1.-self._time_frac_ss)):
+                results.n_ave+= len(we)/len(ee)
+                results.piYX_ave+= piYX
+                results.trout1_ave+= trout1
+                results.trout2_ave+= trout2
+                results.Q_ave+= q_ave
+
         out_f.close()
 
-        # Build a dictionary of results to return
-        results = {}
-        results['n/no'] = len(we)/len(ee)
-        results['piYX'] = piYX
-        results['trouton 1'] = trout1
-        results['trouton 2'] = trout2
-        results['Qave'] = q_ave
+        # Finalize results to return
+        results.n_ave=results.n_ave/t_res
+        results.piYX_ave=results.piYX_ave/t_res
+        results.trout1_ave=results.trout1_ave/t_res
+        results.trout2_ave=results.trout2_ave/t_res
+        results.Q_ave=results.Q_ave/t_res
         symbol=array('u')
         symbol.append('O')
-        results['trouton 1 plot'] = TextPlot(ncur=1, npts=len(trout1_vals), x=[time_vals], y=[trout1_vals],
-                                             symbol=symbol, titl1='FENE Network Start-up of Elongational Flow Simulation',
-                                             titl2='O: Elongational Viscosity vs Time')
+        results.trout1_plt = TextPlot(ncur=1, npts=len(trout1_vals), x=[time_vals], y=[trout1_vals],
+                                      symbol=symbol, titl1='FENE Network Start-up of Elongational Flow Simulation',
+                                      titl2='O: Elongational Viscosity vs Time')
 
         return results
 

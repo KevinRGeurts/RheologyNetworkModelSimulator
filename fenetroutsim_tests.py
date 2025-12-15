@@ -15,7 +15,7 @@ class MyTestCase(unittest.TestCase):
     def test_run_sim(self):
         seed(1234567890)
 
-        exp_val = {'Qave': 0.16120476697474345, 'n/no': 0.99, 'piYX': 0.07210091235002708, 'trouton 1': 0.04910825791240936, 'trouton 2': 0.002181808305839823}
+        exp_val = {'Qave': 0.16110272799636224, 'n/no': 0.99, 'piYX': 0.07245743211970784, 'trouton 1': 0.04737104142315748, 'trouton 2': 0.0021919416527666088}
 
         sim_input = {}
         sim_input['gamdot'] = 10.0
@@ -29,14 +29,12 @@ class MyTestCase(unittest.TestCase):
 
         sim = FeneTroutSim(sim_input)
         act_val = sim.run_sim()
-        self.assertAlmostEqual(exp_val['Qave'], act_val['Qave'], 15)
-        self.assertAlmostEqual(exp_val['n/no'], act_val['n/no'], 15)
-        self.assertAlmostEqual(exp_val['piYX'], act_val['piYX'], 15)
-        self.assertAlmostEqual(exp_val['trouton 1'], act_val['trouton 1'], 15)
-        self.assertAlmostEqual(exp_val['trouton 2'], act_val['trouton 2'], 15)
-
-
-
+        print(act_val)
+        self.assertAlmostEqual(exp_val['Qave'], act_val.Q_ave, 15)
+        self.assertAlmostEqual(exp_val['n/no'], act_val.n_ave, 15)
+        self.assertAlmostEqual(exp_val['piYX'], act_val.piYX_ave,15)
+        self.assertAlmostEqual(exp_val['trouton 1'], act_val.trout1_ave, 15)
+        self.assertAlmostEqual(exp_val['trouton 2'], act_val.trout2_ave, 15)
 
 
 if __name__ == '__main__':
