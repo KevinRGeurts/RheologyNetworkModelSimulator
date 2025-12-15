@@ -1,5 +1,6 @@
 import unittest
-from fenetroutsim import *
+from RheologyNetworkModelSimulator.fenetroutsim import FeneTroutSim
+from RheologyNetworkModelSimulator.strand import Strand
 from random import seed
 
 

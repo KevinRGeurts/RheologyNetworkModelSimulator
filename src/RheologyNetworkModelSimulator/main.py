@@ -18,7 +18,7 @@ Exported exceptions:
 from UserResponseCollector.UserQueryCommand import askForInt, askForFloat, askForPathSave, askForPathSave, askForStr
 
 # local imports
-from fenetroutsim import *
+from RheologyNetworkModelSimulator.fenetroutsim import FeneTroutSim
 
 
 if __name__ == '__main__':

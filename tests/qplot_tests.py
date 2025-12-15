@@ -5,7 +5,7 @@ import sys
 from io import StringIO
 
 # local imports
-from qplot import TextPlot, qplot
+from RheologyNetworkModelSimulator.qplot import TextPlot, qplot
 
 class Test_qplot_tests(unittest.TestCase):
     def test_TextPlot_qplot(self):

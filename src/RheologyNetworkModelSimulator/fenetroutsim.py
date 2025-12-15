@@ -22,11 +22,12 @@ Exported exceptions:
 from copy import deepcopy
 from math import log, copysign
 from array import array
-from unittest import result
+from random import uniform
+from math import sqrt
 
 # Local imports
-from strand import *
-from qplot import TextPlot
+from RheologyNetworkModelSimulator.strand import Strand, generate_eq_ensemble, write_ensemble_to_file, ensemble_stress, ensemble_q_ave
+from RheologyNetworkModelSimulator.qplot import TextPlot
 
 
 class FeneTroutSimOut:

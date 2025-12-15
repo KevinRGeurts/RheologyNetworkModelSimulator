@@ -8,7 +8,7 @@ source-includes = ["tests/", "src/RheologyNetworkModelSimulator/Documentation/De
 
 [project]
 name = "RheologyNetworkModelSimulator"
-version = "1.0.0"
+version = "0.1.0"
 dependencies = [
 	"UserResponseCollector>=1.0.6",
 ]

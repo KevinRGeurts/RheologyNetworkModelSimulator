@@ -1,7 +1,6 @@
 import unittest
 
-from strand import Strand, beta, generate_eq_ensemble, ensemble_stress, ensemble_q_ave
-from math import log, exp
+from RheologyNetworkModelSimulator.strand import Strand, beta, generate_eq_ensemble, ensemble_stress, ensemble_q_ave
 
 class MyTestCase(unittest.TestCase):
     def test_strand_init_to_long(self):
