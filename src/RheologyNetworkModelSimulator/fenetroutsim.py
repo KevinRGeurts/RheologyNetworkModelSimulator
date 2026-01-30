@@ -229,5 +229,6 @@ class FeneTroutSim:
         s.qy = s.qy - alpha * gamdot * .5 * s.qy * eps
         s.qz = s.qz + alpha * gamdot * s.qz * eps
 
-        if s.str_len_sqr() > 1.0:
-            s.qz = copysign(sqrt(0.9999 - s.qy * s.qy - s.qx * s.qx), s.qz)
+        if s.max_length is not None:
+            if sqrt(s.str_len_sqr()) > s.max_length:
+                s.qz = copysign(sqrt(0.9999*s.max_length - s.qy * s.qy - s.qx * s.qx), s.qz)

@@ -47,6 +47,10 @@ class Strand:
         self._qz=qz
 
     @property
+    def max_length(self):
+        return self._max_length
+
+    @property
     def qx(self):
         return self._qx
 

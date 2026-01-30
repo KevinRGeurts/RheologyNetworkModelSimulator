@@ -17,6 +17,12 @@ class Test_Strand(unittest.TestCase):
         act_val = (s.qx, s.qy, s.qz)
         self.assertTupleEqual(exp_val, act_val)
 
+    def test_property_getter_max_length(self):
+        exp_val = None
+        s = Strand(0.1, 0.2, 0.3)
+        act_val = s.max_length
+        self.assertEqual(exp_val, act_val)
+
     def test_property_getters_qx_qy_qz(self):
         exp_val = (0.1, 0.2, 0.3)
         s = Strand(0.1, 0.2, 0.3)
@@ -101,6 +107,12 @@ class Test_FENEStrand(unittest.TestCase):
 
     def test_strand_init_to_long(self):
         self.assertRaises(AssertionError, FENEStrand, 1.0, 1.0, 1.0)
+
+    def test_property_getter_max_length(self):
+        exp_val = 1.0
+        s = FENEStrand()
+        act_val = s.max_length
+        self.assertEqual(exp_val, act_val)
 
     def test_property_setter_qx_bad(self):
         s = FENEStrand(0.1, 0.2, 0.3)
