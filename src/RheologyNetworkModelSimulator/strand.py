@@ -47,9 +47,48 @@ class Strand:
         """
         # Enforce that Strand length should not exceed 1.0
         assert(sqrt(qx*qx + qy*qy + qz*qz) <= 1.0)
-        self.qx=qx
-        self.qy=qy
-        self.qz=qz
+        self._qx=qx
+        self._qy=qy
+        self._qz=qz
+
+    @property
+    def qx(self):
+        return self._qx
+
+    # TODO: The setters for the internal strand coordinates enforce the length constraint immediately.
+    # But be aware that since they can be called independently, there could be a situation where the user
+    # plans to change the other coordinates as well, so that the final length is valid, but when the first to second
+    # setter is called, that it isn't valid yet.
+
+    @qx.setter
+    def qx(self, value):
+        assert(sqrt(value*value + self.qy*self.qy + self.qz*self.qz) <= 1.0)
+        self._qx = value
+
+    @property
+    def qy(self):
+        return self._qy
+
+    @qy.setter
+    def qy(self, value):
+        assert(sqrt(self.qx*self.qx + value*value + self.qz*self.qz) <= 1.0)
+        self._qy = value
+
+    @property
+    def qz(self):
+        return self._qz
+
+    @qz.setter
+    def qz(self, value):
+        assert(sqrt(self.qx*self.qx + self.qy*self.qy + value*value) <= 1.0)
+        self._qz = value
+
+    def get_qs(self):
+        """
+        Get the internal coordinates of the Strand, all non-dimensionalized by dividing by the maximum strand length Qo.
+        :return: Tuple (qx, qy, qz) of internal coordinates of the Strand, as (float, float, float)
+        """
+        return (self.qx, self.qy, self.qz)
 
     def str_len_sqr(self):
         """
@@ -128,6 +167,53 @@ class Strand:
         """
         return b * self.qy * self.qx / (1.0 - self.str_len_sqr())
 
+    def generate_eq_ensemble(self, n=1, b=1.0):
+        """
+        Create an ensemble of size n number of strands, where the distribution of strand lengths will
+        fit the equilibrium distribution.
+        :param n: Number of strands to generate for the ensemble, as int
+        :param b: The FENE Parameter (HQo^2/kT), or non-dimensional maximum strand length, as float
+        :return: List of strands in the equilibrium ensemble, as [Strand objects]
+        """
+        e = []
+        # jeq: Normalization constant for equilibriium FENE Dumbbell distribution function DPL2 Eq. (L) of Table 11.5-1
+        jeq = (1. / (2. * pi * beta(3. / 2., (b + 2.) / 2.)))
+        for s in range(n):
+            p1 = 1.0
+            p2 = 0.0
+            # r, theta, phi: Internal coordinates of a network strand in spherical coordinates used to find equilibrium distribution.
+            r, theta, phi = 0.0, 0.0, 0.0
+            while p1>p2:
+                r = uniform(0.0,1.0)
+                theta = pi * uniform(0.0, 1.0)
+                phi = 2.0 * pi * uniform(0.0, 1.0)
+                p1 = uniform(0.0, 1.0)
+                p2 = jeq * ((1.0 - r * r) ** (b / 2.0)) * r * r * sin(theta)
+            x = r * sin(theta) * cos(phi)
+            y = r * sin(theta) * sin(phi)
+            z = r * cos(theta)
+            e.append(Strand(x, y, z))
+        return e
+
+    def ensemble_stress(self, e, b):
+        """
+        Compute the components of the total stress tensor for the network,
+        by summing over the strands in the network ensemble.  Stress tensor is divided by NokT.
+        :param e: List of strands (the "ensemble"), as [Strand objects].
+        :param b: The FENE Parameter (HQo^2/kT), or non-dimensional maximum strand length, as float
+        :return: Tuple (XX, YY, ZZ, YX) of components of total stress tensor of the network, divided by NokT, as (float, float, float, float)
+        """
+        piXX = 0.0
+        piYY = 0.0
+        piZZ = 0.0
+        piYX = 0.0
+        for s in e:
+            piXX = piXX + s.stress_XX(b)
+            piYY = piYY + s.stress_YY(b)
+            piZZ = piZZ + s.stress_ZZ(b)
+            piYX = piYX + s.stress_YX(b)
+        return (piXX, piYY, piZZ, piYX)
+
 
 def beta(z, w):
     """
@@ -138,90 +224,3 @@ def beta(z, w):
     :return: Beta function of z and w, as float
     """
     return exp(lgamma(z)+lgamma(w)-lgamma(z+w))
-
-
-# TODO: Consider making this a method of Strand class.
-# Generate an equilibrium ensemble of strands, returned as a list, using a rejection technique
-def generate_eq_ensemble(n=1, b=1.0):
-    """
-    Create an ensemble of size n number of strands, where the distribution of strand lengths will
-    fit the equilibrium distribution.
-
-    :param n: Number of strands to generate for the ensemble, as int
-    :param b: The FENE Parameter (HQo^2/kT), or non-dimensional maximum strand length, as float
-    :return: List of strands in the equilibrium ensemble, as [Strand objects]
-    """
-    e = []
-    # jeq: Normalization constant for equilibriium FENE Dumbbell distribution function DPL2 Eq. (L) of Table 11.5-1
-    jeq = (1. / (2. * pi * beta(3. / 2., (b + 2.) / 2.)))
-    for s in range(n):
-        p1 = 1.0
-        p2 = 0.0
-        # r, theta, phi: Internal coordinates of a network strand in spherical coordinates used to find equilibrium distribution.
-        r, theta, phi = 0.0, 0.0, 0.0
-        while p1>p2:
-            r = uniform(0.0,1.0)
-            theta = pi * uniform(0.0, 1.0)
-            phi = 2.0 * pi * uniform(0.0, 1.0)
-            p1 = uniform(0.0, 1.0)
-            p2 = jeq * ((1.0 - r * r) ** (b / 2.0)) * r * r * sin(theta)
-        x = r * sin(theta) * cos(phi)
-        y = r * sin(theta) * sin(phi)
-        z = r * cos(theta)
-        e.append(Strand(x, y, z))
-    return e
-
-
-# TODO: Consider making this a method of Strand class.
-def write_ensemble_to_file(e, filename):
-    """
-    Write a CSV formatted text file with the internal coordinates and length of each strand  in list.
-
-    :param e: List of strands (the "ensemble") to output to file, as [Strand objects].
-    :param filename: Name of file to write to, as string.
-    :return: None.
-    """
-    import os
-    f = open(filename, 'w')
-    f.write('qx, qy, qz, length\n')
-    i = 1
-    for s in e:
-        f.write('%i, %f, %f, %f, %f\n' % (i, s.qx, s.qy, s.qz, sqrt(s.str_len_sqr())))
-        i = i +1
-    f.close()
-
-
-# TODO: Consider making this a method of Strand class.
-def ensemble_stress(e, b):
-    """
-    Compute the components of the total stress tensor for the network,
-    by summing over the strands in the network ensemble.  Stress tensor is divided by NokT.
-
-    :param e: List of strands (the "ensemble"), as [Strand objects].
-    :param b: The FENE Parameter (HQo^2/kT), or non-dimensional maximum strand length, as float
-    :return: Tuple (XX, YY, ZZ, YX) of components of total stress tensor of the network, divided by NokT, as (float, float, float, float)
-    """
-    piXX = 0.0
-    piYY = 0.0
-    piZZ = 0.0
-    piYX = 0.0
-    for s in e:
-        piXX = piXX + s.stress_XX(b)
-        piYY = piYY + s.stress_YY(b)
-        piZZ = piZZ + s.stress_ZZ(b)
-        piYX = piYX + s.stress_YX(b)
-    return (piXX, piYY, piZZ, piYX)
-
-
-# TODO: Consider making this a method of Strand class.        
-def ensemble_q_ave(e):
-    """
-    Compute the average length of a strand in the network ensemble, divided by the maximum strand length.
-
-    :param e: List of strands (the "ensemble"), as [Strand objects].
-    :return: Average length of a strand in the network ensemble, divided by the maximum strand length, as float
-    """
-    total_q = 0.0
-    for s in e:
-        total_q = total_q + sqrt(s.str_len_sqr())
-    return total_q / len(e)

@@ -22,6 +22,9 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ensemble.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="fenetroutsim.py" />
     <Compile Include="main.py" />
     <Compile Include="qplot.py">

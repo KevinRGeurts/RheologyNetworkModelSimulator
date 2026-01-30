@@ -26,7 +26,8 @@ from random import uniform
 from math import sqrt
 
 # Local imports
-from RheologyNetworkModelSimulator.strand import Strand, generate_eq_ensemble, write_ensemble_to_file, ensemble_stress, ensemble_q_ave
+from RheologyNetworkModelSimulator.strand import Strand
+from RheologyNetworkModelSimulator.ensemble import Ensemble
 from RheologyNetworkModelSimulator.qplot import TextPlot
 
 
@@ -105,12 +106,15 @@ class FeneTroutSim:
         out_f.write('Step, Strands, <Q>, piYX, trouton_1, trouton_2\n')
 
         # The equilibrium ensemble is used for selecting new strands to join the network
-        ee = generate_eq_ensemble(self.sim_input['begstrand'], self.sim_input['b'])
+        ee = Ensemble(Strand().generate_eq_ensemble(self.sim_input['begstrand'], self.sim_input['b']))
         # TODO: Fix so that uses any path provided by sim_input['outfil']
-        write_ensemble_to_file(ee, 'ensemblestrands.csv')
+        ee.write_ensemble_to_file('ensemblestrands.csv')
 
-        # Copy the equilibrium ensemble as the initial working ensemble
-        we = deepcopy(ee)
+        # Make a deep copy of the equilibrium  ensemble as the initial working ensemble.
+        # It is important that this is a deep copy, so that the Strand objects themselves are not shared between ee and we.
+        # Otherwise, as the simulation proceeded, the Strand objects in ee would be modified (e.g., deformed by movement) as well as those in we,
+        # and it would no longer represent an equilibrium ensemble.
+        we=deepcopy(ee)
 
         # Create some variables so that have the right scope
         q_ave, piYX, trout1, trout2 = 0.0, 0.0, 0.0, 0.0
@@ -126,9 +130,11 @@ class FeneTroutSim:
             for s in we:
                 self.move_strand(s, self.sim_input['eps'], self.sim_input['gamdot'], self.sim_input['n'])
 
-            # Check survival of each strand
-            # Make a copy to iterate over. TODO: Try list comprehension instead? Or a list ot strands to remove afterwards.
-            for s in list(we):
+            # Check survival of each strand.
+            # Since we.strands is a copy of the list of strands in we, but the Strand objects in the list themselves are shared,
+            # the call to we.remove(s) below removes the correct Strand object from we, but the iteration over s in we.strands is unaffected.
+            # TODO: Try list comprehension instead? Or a list ot strands to remove afterwards.
+            for s in we.strands:
                 p1 = uniform(0.0, 1.0)
                 if p1 <= s.loss_prob(self.sim_input['eps'], self.sim_input['n'], self.sim_input['mm']):
                     we.remove(s)
@@ -137,6 +143,9 @@ class FeneTroutSim:
             for s in ee:
                 p1 = uniform(0.0, 1.0)
                 if p1 <= s.loss_prob(self.sim_input['eps'], self.sim_input['n'], self.sim_input['mm']):
+                    # Here we create a new Strand object, ns, to add to the working ensemble we. It starts with
+                    # the same internal coordinates as strand s from the equilibrium ensemble ee, but then deforms
+                    # independently.
                     ns = Strand(s.qx, s.qy, s.qz)
                     # Move the new strand for the portion of the part of a time step for which it existed
                     p1 = uniform(0.0, 1.0)
@@ -146,8 +155,8 @@ class FeneTroutSim:
                     we.append(ns)
 
             # Compute some output values for this time step
-            q_ave = ensemble_q_ave(we)
-            stress = ensemble_stress(we, self.sim_input['b'])
+            q_ave = we.q_ave()
+            stress = Strand().ensemble_stress(we, self.sim_input['b'])
             piYX = stress[3] / self.sim_input['begstrand']
             trout1 = (stress[2] - stress[0]) / self.sim_input['begstrand'] / self.sim_input['gamdot']
             trout2 = (stress[1] - stress[0]) / self.sim_input['begstrand'] / self.sim_input['gamdot']
@@ -212,4 +221,3 @@ class FeneTroutSim:
 
         if s.str_len_sqr() > 1.0:
             s.qz = copysign(sqrt(0.9999 - s.qy * s.qy - s.qx * s.qx), s.qz)
-
