@@ -198,6 +198,15 @@ class FeneTroutSim:
 
         return results
 
+    # TODO: Consider making move_strand a method of Strand class instead. Could a partial function be passed in that
+    # Strand.move_strand could call to move itself according to different models? The parameters specific to the "rheological motion"
+    # (gamdot in this case) would be "frozen" into the partial function. Not quite seeing how this would come together yet
+    # to "generalize" the strand motion, though. Probably need to generate a list of every operation in the simulation
+    # that I would be trying to generalize first: e.g., type of Strand (FENE, Hookean, etc),
+    # type of motion (elongational, shear, etc). Simulation operations that are impacted are strand movement, stress calculation,
+    # rheologic properties calculation, strand loss rate calculation and disentanglement probability calculation, probablity of
+    # new strand entanglement, maybe others.
+    
     # Appy Euler integration to advance a strand s, one time step eps, under elongation rate gamdot.
     # n parameters the non-affine motion
     def move_strand(self, s, eps, gamdot, n):
