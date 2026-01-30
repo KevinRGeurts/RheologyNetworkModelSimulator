@@ -26,7 +26,7 @@ from random import uniform
 from math import sqrt
 
 # Local imports
-from RheologyNetworkModelSimulator.strand import Strand
+from RheologyNetworkModelSimulator.strand import FENEStrand
 from RheologyNetworkModelSimulator.ensemble import Ensemble
 from RheologyNetworkModelSimulator.qplot import TextPlot
 
@@ -106,7 +106,8 @@ class FeneTroutSim:
         out_f.write('Step, Strands, <Q>, piYX, trouton_1, trouton_2\n')
 
         # The equilibrium ensemble is used for selecting new strands to join the network
-        ee = Ensemble(Strand().generate_eq_ensemble(self.sim_input['begstrand'], self.sim_input['b']))
+        a_strand=FENEStrand(qx=0.0, qy=0.0, qz=0.0, b=self.sim_input['b'], n=self.sim_input['n'], mm=self.sim_input['mm'])
+        ee = Ensemble(a_strand.generate_eq_ensemble(self.sim_input['begstrand']))
         # TODO: Fix so that uses any path provided by sim_input['outfil']
         ee.write_ensemble_to_file('ensemblestrands.csv')
 
@@ -136,27 +137,27 @@ class FeneTroutSim:
             # TODO: Try list comprehension instead? Or a list ot strands to remove afterwards.
             for s in we.strands:
                 p1 = uniform(0.0, 1.0)
-                if p1 <= s.loss_prob(self.sim_input['eps'], self.sim_input['n'], self.sim_input['mm']):
+                if p1 <= s.loss_prob(self.sim_input['eps']):
                     we.remove(s)
 
             # Create new strands to enter the network, from the equilibrium ensemble
             for s in ee:
                 p1 = uniform(0.0, 1.0)
-                if p1 <= s.loss_prob(self.sim_input['eps'], self.sim_input['n'], self.sim_input['mm']):
+                if p1 <= s.loss_prob(self.sim_input['eps']):
                     # Here we create a new Strand object, ns, to add to the working ensemble we. It starts with
                     # the same internal coordinates as strand s from the equilibrium ensemble ee, but then deforms
                     # independently.
-                    ns = Strand(s.qx, s.qy, s.qz)
+                    ns = FENEStrand(s.qx, s.qy, s.qz, b=self.sim_input['b'], n=self.sim_input['n'], mm=self.sim_input['mm'])
                     # Move the new strand for the portion of the part of a time step for which it existed
                     p1 = uniform(0.0, 1.0)
-                    y = -log(1. - p1 * ns.loss_prob(self.sim_input['eps'], self.sim_input['n'], self.sim_input['mm'])) / ns.loss_rate(self.sim_input['n'], self.sim_input['mm'])
+                    y = -log(1. - p1 * ns.loss_prob(self.sim_input['eps'])) / ns.loss_rate()
                     self.move_strand(ns, y, self.sim_input['gamdot'], self.sim_input['n'])
 
                     we.append(ns)
 
             # Compute some output values for this time step
             q_ave = we.q_ave()
-            stress = Strand().ensemble_stress(we, self.sim_input['b'])
+            stress = we[0].ensemble_stress(we)
             piYX = stress[3] / self.sim_input['begstrand']
             trout1 = (stress[2] - stress[0]) / self.sim_input['begstrand'] / self.sim_input['gamdot']
             trout2 = (stress[1] - stress[0]) / self.sim_input['begstrand'] / self.sim_input['gamdot']
