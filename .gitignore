@@ -163,3 +163,4 @@ cython_debug/
 /ensemblestrands.csv
 /testfenetrout.out
 /src/RheologyNetworkModelSimulator/.vs/FeneTrout
+/src/RheologyNetworkModelSimulator/ensemblestrands.csv
