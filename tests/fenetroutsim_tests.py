@@ -1,17 +1,204 @@
+
+# Standard library imports
 import unittest
-from RheologyNetworkModelSimulator.fenetroutsim import FeneTroutSim
-from RheologyNetworkModelSimulator.strand import Strand
 from random import seed
 
+# Local imports
+from RheologyNetworkModelSimulator.fenetroutsim import FeneTroutSim, RheoNetSimOut, FeneTroutSimOut, move_strand_fene_elongational, RheoNetSim
+from RheologyNetworkModelSimulator.strand import Strand, FENEStrand
+from RheologyNetworkModelSimulator.ensemble import Ensemble
 
-class MyTestCase(unittest.TestCase):
-    def test_move_strand(self):
+
+class Test_RheoNetSimOut(unittest.TestCase):
+    def test_str(self):
+        sim_out = RheoNetSimOut()
+        sim_out.n_ave=10000
+        sim_out.Q_ave=0.87
+        sim_out.piYX_ave=10.0
+        exp_val = f"{sim_out.n_ave}, {sim_out.piYX_ave}, {sim_out.Q_ave}"
+        act_val = str(sim_out)
+        self.assertEqual(exp_val, act_val)
+
+class FENETroutSimOut(unittest.TestCase):
+    def test_str(self):
+        sim_out = FeneTroutSimOut()
+        sim_out.n_ave=10000
+        sim_out.Q_ave=0.87
+        sim_out.piYX_ave=10.0
+        sim_out.trout1_ave=8.5
+        sim_out.trout2_ave=0.2
+        sim_out.trout1_plt=None
+        exp_val = f"{sim_out.n_ave}, {sim_out.piYX_ave}, {sim_out.Q_ave}, {sim_out.trout1_ave}, {sim_out.trout2_ave}"
+        act_val = str(sim_out)
+        self.assertEqual(exp_val, act_val)
+
+
+class Test_RheoNetSim(unittest.TestCase):
+    def test_init(self):
+        # strand_mover just needs to be a callable, for this test, which is really testing that
+        # _createSimOutObj raises NotImplementedError
+        self.assertRaises(NotImplementedError, RheoNetSim, strand_mover=str)
+
+
+class Test_FENETroutSim(unittest.TestCase):
+    def test_move_fene_strand_elongational(self):
+        # def move_strand_fene_elongational(s, eps, gamdot):
         exp_val = (0.09570000000000001, 0.19140000000000001, 0.3258)
-        sim = FeneTroutSim({})
-        s = Strand(0.1, 0.2, 0.3)
-        sim.move_strand(s, 0.001, 100.0, 2)
+        s = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=100.0, n=2.0, mm=1.0)
+        move_strand_fene_elongational(s, 0.001, 100.0)
         act_val = (s.qx, s.qy, s.qz)
         self.assertTupleEqual(exp_val, act_val)
+
+    def test_init(self):
+        s = FENEStrand()
+        sim = FeneTroutSim({}, s, move_strand_fene_elongational)
+        self.assertIsInstance(sim._sim_output, FeneTroutSimOut)
+
+    def test_getOutFileHeader(self):
+        s = FENEStrand()
+        sim = FeneTroutSim({}, s, move_strand_fene_elongational)
+        exp_val = "Time, Strands, <Q>, piYX, trouton_1, trouton_2"
+        act_val = sim._getOutFileHeader()
+        self.assertEqual(exp_val, act_val)
+
+    def test_computeTimestepOutputs_before_ss(self):
+        from math import sqrt
+        sim_input = {}
+        sim_input['gamdot'] = 10.0
+        sim_input['begstrand'] = 100
+        sim_input['eps'] = 0.001
+        sim_input['steps'] = int(0.01 / sim_input['eps'])
+        sim_input['b'] = 100.0  # All results in J. Chem. Phys article
+        sim_input['n'] = 2  # Don't change
+        sim_input['mm'] = 1  # Don't change
+        sim_input['outfile'] = 'testfenetrout.out'
+        s1 = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=sim_input['b'], n=sim_input['n'], mm=sim_input['mm'])
+        s2 = FENEStrand(qx=0.3, qy=0.1, qz=0.2, b=sim_input['b'], n=sim_input['n'], mm=sim_input['mm'])
+        sim = FeneTroutSim(sim_input, s1, move_strand_fene_elongational)
+        we = Ensemble([s1, s2])
+        exp_val = FeneTroutSimOut()
+        exp_val.n_vals.append(2)
+        exp_val.piYX_vals.append(0.058139535)
+        exp_val.Q_vals.append(0.374165739)
+        exp_val.time_vals.append(0.007)
+        exp_val.trout1_vals.append(0.003488372)
+        exp_val.trout2_vals.append(-0.005813953)
+        exp_val.n_ave = 0
+        exp_val.piYX_ave = 0
+        exp_val.Q_ave = 0
+        exp_val.trout1_ave = 0
+        exp_val.trout2_ave = 0
+        sim._computeTimestepOutputs(we, 0.007)
+        act_val = sim._sim_output
+        self.assertAlmostEqual(exp_val.n_vals[0], act_val.n_vals[0], 9)
+        self.assertAlmostEqual(exp_val.Q_vals[0], act_val.Q_vals[0], 9)
+        self.assertAlmostEqual(exp_val.time_vals[0], act_val.time_vals[0], 9)
+        self.assertAlmostEqual(exp_val.piYX_vals[0], act_val.piYX_vals[0], 9)
+        self.assertAlmostEqual(exp_val.trout1_vals[0], act_val.trout1_vals[0], 9)
+        self.assertAlmostEqual(exp_val.trout2_vals[0], act_val.trout2_vals[0], 9)
+        self.assertAlmostEqual(exp_val.n_ave, act_val.n_ave, 9)
+        self.assertAlmostEqual(exp_val.piYX_ave, act_val.piYX_ave, 9)
+        self.assertAlmostEqual(exp_val.Q_ave, act_val.Q_ave, 9)
+        self.assertAlmostEqual(exp_val.trout1_ave, act_val.trout1_ave, 9)
+        self.assertAlmostEqual(exp_val.trout2_ave, act_val.trout2_ave, 9)
+
+    def test_computeTimestepOutputs_after_ss(self):
+        from math import sqrt
+        sim_input = {}
+        sim_input['gamdot'] = 10.0
+        sim_input['begstrand'] = 100
+        sim_input['eps'] = 0.001
+        sim_input['steps'] = int(0.01 / sim_input['eps'])
+        sim_input['b'] = 100.0  # All results in J. Chem. Phys article
+        sim_input['n'] = 2  # Don't change
+        sim_input['mm'] = 1  # Don't change
+        sim_input['outfile'] = 'testfenetrout.out'
+        s1 = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=sim_input['b'], n=sim_input['n'], mm=sim_input['mm'])
+        s2 = FENEStrand(qx=0.3, qy=0.1, qz=0.2, b=sim_input['b'], n=sim_input['n'], mm=sim_input['mm'])
+        sim = FeneTroutSim(sim_input, s1, move_strand_fene_elongational)
+        we = Ensemble([s1, s2])
+        exp_val = FeneTroutSimOut()
+        exp_val.n_vals.append(2)
+        exp_val.piYX_vals.append(0.058139535)
+        exp_val.Q_vals.append(0.374165739)
+        exp_val.time_vals.append(0.008)
+        exp_val.trout1_vals.append(0.003488372)
+        exp_val.trout2_vals.append(-0.005813953)
+        exp_val.n_ave = 2/sim_input['begstrand']
+        exp_val.piYX_ave = 0.058139535
+        exp_val.Q_ave = 0.374165739
+        exp_val.trout1_ave = 0.003488372
+        exp_val.trout2_ave = -0.005813953
+        sim._computeTimestepOutputs(we, 0.008)
+        act_val = sim._sim_output
+        self.assertAlmostEqual(exp_val.n_vals[0], act_val.n_vals[0], 9)
+        self.assertAlmostEqual(exp_val.Q_vals[0], act_val.Q_vals[0], 9)
+        self.assertAlmostEqual(exp_val.time_vals[0], act_val.time_vals[0], 9)
+        self.assertAlmostEqual(exp_val.piYX_vals[0], act_val.piYX_vals[0], 9)
+        self.assertAlmostEqual(exp_val.n_ave, act_val.n_ave, 9)
+        self.assertAlmostEqual(exp_val.piYX_ave, act_val.piYX_ave, 9)
+        self.assertAlmostEqual(exp_val.Q_ave, act_val.Q_ave, 9)
+        self.assertAlmostEqual(exp_val.trout1_ave, act_val.trout1_ave, 9)
+        self.assertAlmostEqual(exp_val.trout2_ave, act_val.trout2_ave, 9)
+
+    def test_computeTimestepOutputs_after_ss_finalize(self):
+        from math import sqrt
+        sim_input = {}
+        sim_input['gamdot'] = 10.0
+        sim_input['begstrand'] = 100
+        sim_input['eps'] = 0.001
+        sim_input['steps'] = int(0.01 / sim_input['eps'])
+        sim_input['b'] = 100.0  # All results in J. Chem. Phys article
+        sim_input['n'] = 2  # Don't change
+        sim_input['mm'] = 1  # Don't change
+        sim_input['outfile'] = 'testfenetrout.out'
+        s1 = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=sim_input['b'], n=sim_input['n'], mm=sim_input['mm'])
+        s2 = FENEStrand(qx=0.3, qy=0.1, qz=0.2, b=sim_input['b'], n=sim_input['n'], mm=sim_input['mm'])
+        sim = FeneTroutSim(sim_input, s1, move_strand_fene_elongational)
+        we = Ensemble([s1, s2])
+        exp_val = FeneTroutSimOut()
+        exp_val.n_vals.append(2)
+        exp_val.piYX_vals.append(0.058139535)
+        exp_val.Q_vals.append(0.374165739)
+        exp_val.time_vals.append(0.008)
+        exp_val.trout1_vals.append(0.003488372)
+        exp_val.trout2_vals.append(-0.005813953)
+        exp_val.n_ave = 2/sim_input['begstrand']
+        exp_val.piYX_ave = 0.058139535
+        exp_val.Q_ave = 0.374165739
+        exp_val.trout1_ave = 0.003488372
+        exp_val.trout2_ave = -0.005813953
+        # Manipulate internal state so that data is present when finalize branch is taken
+        sim._sim_output.n_vals.append(2)
+        sim._sim_output.piYX_vals.append(0.058139535)
+        sim._sim_output.Q_vals.append(0.374165739)
+        sim._sim_output.time_vals.append(0.008)
+        sim._sim_output.trout1_vals.append(0.003488372)
+        sim._sim_output.trout2_vals.append(-0.005813953)
+        sim._sim_output.n_ave = exp_val.n_ave
+        sim._sim_output.piYX_ave = exp_val.piYX_ave
+        sim._sim_output.Q_ave = exp_val.Q_ave
+        sim._sim_output.trout1_ave = exp_val.trout1_ave
+        sim._sim_output.trout2_ave = exp_val.trout2_ave
+        # Now modify exp_val to reflect finalize calculations
+        exp_val.n_ave = exp_val.n_ave/round(0.25*int(0.01 / sim_input['eps']))
+        exp_val.piYX_ave = exp_val.piYX_ave/round(0.25*int(0.01 / sim_input['eps']))
+        exp_val.Q_ave = exp_val.Q_ave/round(0.25*int(0.01 / sim_input['eps']))
+        exp_val.trout1_ave = exp_val.trout1_ave/round(0.25*int(0.01 / sim_input['eps']))
+        exp_val.trout2_ave = exp_val.trout2_ave/round(0.25*int(0.01 / sim_input['eps']))
+        # Now call with finalize=True
+        sim._computeTimestepOutputs(we, 0.008, True)
+        act_val = sim._sim_output
+        self.assertAlmostEqual(exp_val.n_vals[0], act_val.n_vals[0], 9)
+        self.assertAlmostEqual(exp_val.Q_vals[0], act_val.Q_vals[0], 9)
+        self.assertAlmostEqual(exp_val.time_vals[0], act_val.time_vals[0], 9)
+        self.assertAlmostEqual(exp_val.piYX_vals[0], act_val.piYX_vals[0], 9)
+        self.assertAlmostEqual(exp_val.n_ave, act_val.n_ave, 9)
+        self.assertAlmostEqual(exp_val.piYX_ave, act_val.piYX_ave, 9)
+        self.assertAlmostEqual(exp_val.Q_ave, act_val.Q_ave, 9)
+        self.assertAlmostEqual(exp_val.trout1_ave, act_val.trout1_ave, 9)
+        self.assertAlmostEqual(exp_val.trout2_ave, act_val.trout2_ave, 9)
+
 
     def test_run_sim(self):
         seed(1234567890)
@@ -28,7 +215,8 @@ class MyTestCase(unittest.TestCase):
         sim_input['mm'] = 1  # Don't change
         sim_input['outfile'] = 'testfenetrout.out'
 
-        sim = FeneTroutSim(sim_input)
+        _proto_strand = FENEStrand(qx=0, qy=0, qz=0, b=sim_input['b'], n=sim_input['n'], mm=sim_input['mm'])
+        sim = FeneTroutSim(sim_input, _proto_strand, move_strand_fene_elongational)
         act_val = sim.run_sim()
         print(act_val)
         self.assertAlmostEqual(exp_val['Qave'], act_val.Q_ave, 15)

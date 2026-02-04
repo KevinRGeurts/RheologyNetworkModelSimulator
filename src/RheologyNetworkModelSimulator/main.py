@@ -18,7 +18,8 @@ Exported exceptions:
 from UserResponseCollector.UserQueryCommand import askForInt, askForFloat, askForPathSave, askForPathSave, askForStr
 
 # local imports
-from RheologyNetworkModelSimulator.fenetroutsim import FeneTroutSim
+from RheologyNetworkModelSimulator.fenetroutsim import FeneTroutSim, move_strand_fene_elongational
+from RheologyNetworkModelSimulator.strand import FENEStrand
 
 
 if __name__ == '__main__':
@@ -53,7 +54,8 @@ if __name__ == '__main__':
     sim_input['banner'] = ''
 
     # Initialize the simulation
-    sim = FeneTroutSim(sim_input)
+    _proto_strand = FENEStrand(qx=0, qy=0, qz=0, b=sim_input['b'], n=sim_input['n'], mm=sim_input['mm'])
+    sim = FeneTroutSim(sim_input, _proto_strand, move_strand_fene_elongational)
 
     # Execute the simulation
     so=sim.run_sim()
