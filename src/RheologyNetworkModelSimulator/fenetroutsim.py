@@ -58,10 +58,26 @@ class RheoNetSimOut:
 
     def __str__(self):
         """
-        Convert object to str, for example, to print results.
-        :return: Class attributes converted to a string representation, suitable for printing results, as str
+        Convert object to str, for example, to write results to file.
+        :return: Class attributes converted to a string representation, suitable for writing results to a file, as str
         """
-        result = f"{self.n_ave}, {self.piYX_ave}, {self.Q_ave}"
+        result = f"{self.n_vals[len(self.n_vals)-1]}, {self.piYX_vals[len(self.piYX_vals)-1]}, {self.Q_vals[len(self.Q_vals)-1]}"
+        return result
+
+    def time_step_output(self):
+        """
+        Generate a string representation of labeled output values for the latest time step, for example, to print to show progress of simulation.
+        :return: Class attributes converted to a string representation, suitable for printing time step results to show progress of simulation, as str
+        """
+        result = f"n: {self.n_vals[len(self.n_vals)-1]}, piYX: {self.piYX_vals[len(self.piYX_vals)-1]}, Q: {self.Q_vals[len(self.Q_vals)-1]}"
+        return result
+
+    def final_output(self):
+        """
+        Generate a string representation of labeled output values for the final time-averaged results, for example, to print at the end of simulation.
+        :return: Class attributes converted to a string representation, suitable for printing final results at end of simulation, as str
+        """
+        result = f"Avg n: {self.n_ave}\nAvg piYX: {self.piYX_ave}\nAvg Q: {self.Q_ave}\n"
         return result
 
 
@@ -89,11 +105,29 @@ class FeneTroutSimOut(RheoNetSimOut):
 
     def __str__(self):
         """
-        Convert object to str, for example, to print results.
-        :return: Class attributes converted to a string representation, suitable for printing results, as str
+        Convert object to str, for example, to write results to file.
+        :return: Class attributes converted to a string representation, suitable for writing results to a file, as str
         """
         result = super().__str__()
-        result += f", {self.trout1_ave}, {self.trout2_ave}"
+        result += f", {self.trout1_vals[len(self.trout1_vals)-1]}, {self.trout2_vals[len(self.trout2_vals)-1]}"
+        return result
+
+    def time_step_output(self):
+        """
+        Generate a string representation of labeled output values for the latest time step, for example, to print to show progress of simulation.
+        :return: Class attributes converted to a string representation, suitable for printing time step results to show progress of simulation, as str
+        """
+        result = super().time_step_output()
+        result += f", Trout 1: {self.trout1_vals[len(self.trout1_vals)-1]}, Trout 2: {self.trout2_vals[len(self.trout2_vals)-1]}"
+        return result
+
+    def final_output(self):
+        """
+        Generate a string representation of labeled output values for the final time-averaged results, for example, to print at the end of simulation.
+        :return: Class attributes converted to a string representation, suitable for printing final results at end of simulation, as str
+        """
+        result = super().final_output()
+        result += f"Avg Trout 1: {self.trout1_ave}\nAvg Trout 2: {self.trout2_ave}\n\n{self.trout1_plt}"
         return result
 
 
@@ -257,10 +291,10 @@ class RheoNetSim:
             self._computeTimestepOutputs(we, ts * self.sim_input['eps'])
 
             # Print some output to the stdout
-            print(f"Time: {ts * self.sim_input['eps']}, {self._sim_output}")
+            print(f"Time: {round(ts * self.sim_input['eps'], 9)}, {self._sim_output.time_step_output()}")
 
             # Write some output to a file
-            out_f.write(f"{ts * self.sim_input['eps']}, {self._sim_output}\n")
+            out_f.write(f"{round(ts * self.sim_input['eps'], 9)}, {self._sim_output}\n")
 
         out_f.close()
 

@@ -46,20 +46,17 @@ if __name__ == '__main__':
     sim_input['begstrand'] = begstrand
     sim_input['eps'] = eps
     sim_input['steps'] = steps
-    sim_input['b'] = fene_b
-    sim_input['n'] = 2.0 # Don't change
-    sim_input['mm'] = 1.0  # Don't change
     sim_input['outfile'] = outfil
     # TODO: Investigate if this is actually used
     sim_input['banner'] = ''
 
     # Initialize the simulation
-    _proto_strand = FENEStrand(qx=0, qy=0, qz=0, b=sim_input['b'], n=sim_input['n'], mm=sim_input['mm'])
+    _proto_strand = FENEStrand(qx=0, qy=0, qz=0, b=fene_b, n=2.0, mm=1.0) # Don't change n or mm
     sim = FeneTroutSim(sim_input, _proto_strand, move_strand_fene_elongational)
 
     # Execute the simulation
     so=sim.run_sim()
 
     # Print some output from the simulation
-    print(so)
+    print(f"\n**Final Simulation Results**\n{so.final_output()}")
 
