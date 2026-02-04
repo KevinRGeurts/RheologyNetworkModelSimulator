@@ -206,7 +206,7 @@ class RheoNetSim:
             n_val = len(we)
             self._sim_output.n_vals.append(n_val)
 
-            stress = we[0].ensemble_stress(we)
+            stress = we.ensemble_stress()
             piYX = stress[3] / self.sim_input['begstrand']
             self._sim_output.piYX_vals.append(piYX)
 
@@ -362,7 +362,7 @@ class FeneTroutSim(RheoNetSim):
         if not finalize:
             # Compute and store output values for this time step, and accumulate sums for time-averaged values later
 
-            stress = we[0].ensemble_stress(we)
+            stress = we.ensemble_stress()
             trout1 = (stress[2] - stress[0]) / self.sim_input['begstrand'] / self.sim_input['gamdot']
             self._sim_output.trout1_vals.append(trout1)
             trout2 = (stress[1] - stress[0]) / self.sim_input['begstrand'] / self.sim_input['gamdot']

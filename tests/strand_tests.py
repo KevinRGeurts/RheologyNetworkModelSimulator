@@ -90,10 +90,6 @@ class Test_Strand(unittest.TestCase):
         s = Strand(0.1, 0.2, 0.3)
         self.assertRaises(NotImplementedError, s.generate_eq_ensemble, 10)
 
-    def test_ensemble_stress(self):
-        e = [Strand(0.1, 0.2, 0.3), Strand(0.1, 0.2, 0.3)]
-        self.assertRaises(NotImplementedError, e[0].ensemble_stress, e)
-
 
 class Test_FENEStrand(unittest.TestCase):
     def test_init(self):
@@ -169,12 +165,6 @@ class Test_FENEStrand(unittest.TestCase):
         e = FENEStrand().generate_eq_ensemble(10)
         self.assertEqual(10, len(e))
         act_val = (e[0].qx, e[0].qy, e[0].qz)
-        self.assertTupleEqual(exp_val, act_val)
-
-    def test_ensemble_stress(self):
-        exp_val = (2.*1.1627906976744187, 2.*4.651162790697675, 2.*10.465116279069768, 2.*2.3255813953488373)
-        e=[FENEStrand(0.1, 0.2, 0.3), FENEStrand(0.1, 0.2, 0.3)]
-        act_val = e[0].ensemble_stress(e)
         self.assertTupleEqual(exp_val, act_val)
 
 

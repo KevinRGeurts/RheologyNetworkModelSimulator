@@ -1,7 +1,7 @@
 import unittest
 
 from RheologyNetworkModelSimulator.ensemble import Ensemble
-from RheologyNetworkModelSimulator.strand import Strand
+from RheologyNetworkModelSimulator.strand import Strand, FENEStrand
 
 class Test_Ensemble(unittest.TestCase):
     def test_q_ave(self):
@@ -9,6 +9,17 @@ class Test_Ensemble(unittest.TestCase):
         e = Ensemble([Strand(0.1, 0.2, 0.3), Strand(0.1, 0.2, 0.3)])
         act_val = e.q_ave()
         self.assertEqual(exp_val, act_val)
+
+    def test_ensemble_stress(self):
+        exp_val = (2.*1.1627906976744187, 2.*4.651162790697675, 2.*10.465116279069768, 2.*2.3255813953488373)
+        e=Ensemble([FENEStrand(0.1, 0.2, 0.3), FENEStrand(0.1, 0.2, 0.3)])
+        act_val = e.ensemble_stress()
+        self.assertTupleEqual(exp_val, act_val)
+
+    def test_ensemble_stress_fail(self):
+        exp_val = (2.*1.1627906976744187, 2.*4.651162790697675, 2.*10.465116279069768, 2.*2.3255813953488373)
+        e=Ensemble([Strand(0.1, 0.2, 0.3), Strand(0.1, 0.2, 0.3)])
+        self.assertRaises(NotImplementedError, e.ensemble_stress)
 
     def test_len(self):
         e = Ensemble([Strand(0.1, 0.2, 0.3), Strand(0.1, 0.2, 0.3)])

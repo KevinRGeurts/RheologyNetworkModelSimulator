@@ -64,6 +64,24 @@ class Ensemble(object):
             total_q = total_q + sqrt(s.str_len_sqr())
         return total_q / len(self._strands)
 
+    def ensemble_stress(self):
+        """
+        Compute the components of the total stress tensor for the network,
+        by summing over the strands in the network ensemble.  Stress tensor is divided by NokT.
+        :param e: List of strands (the "ensemble"), as [Strand objects].
+        :return: Tuple (XX, YY, ZZ, YX) of components of total stress tensor of the network, divided by NokT, as (float, float, float, float)
+        """
+        piXX = 0.0
+        piYY = 0.0
+        piZZ = 0.0
+        piYX = 0.0
+        for s in self._strands:
+            piXX = piXX + s.stress_XX()
+            piYY = piYY + s.stress_YY()
+            piZZ = piZZ + s.stress_ZZ()
+            piYX = piYX + s.stress_YX()
+        return (piXX, piYY, piZZ, piYX)
+
     # Implement methods so that a Hand can be treated as a container type. See Section 3.3.7. Emulating container types in
     # https://docs.python.org/3/reference/datamodel.html#classgetitem-versus-getitem
     
