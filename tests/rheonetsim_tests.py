@@ -5,7 +5,7 @@ from random import seed
 from array import array
 
 # Local imports
-from RheologyNetworkModelSimulator.fenetroutsim import ElongateNetSim, RheoNetSimOut, ElongateNetSimOut, move_strand_fene_elongational, RheoNetSim, move_strand_fens_elongational
+from RheologyNetworkModelSimulator.rheonetsim import ElongateNetSim, RheoNetSimOut, ElongateNetSimOut, move_strand_fene_elongational, RheoNetSim, move_strand_fens_elongational
 from RheologyNetworkModelSimulator.strand import FENEStrand
 from RheologyNetworkModelSimulator.ensemble import Ensemble
 from RheologyNetworkModelSimulator.qplot import TextPlot

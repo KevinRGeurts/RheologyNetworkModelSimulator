@@ -18,7 +18,7 @@ Exported exceptions:
 from UserResponseCollector.UserQueryCommand import askForInt, askForFloat, askForPathSave, askForPathSave, askForStr, askForMenuSelection
 
 # local imports
-from RheologyNetworkModelSimulator.fenetroutsim import ElongateNetSim, move_strand_fene_elongational, move_strand_fens_elongational
+from RheologyNetworkModelSimulator.rheonetsim import ElongateNetSim, move_strand_fene_elongational, move_strand_fens_elongational
 from RheologyNetworkModelSimulator.strand import FENEStrand, FENSStrand
 
 
