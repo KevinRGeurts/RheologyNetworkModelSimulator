@@ -15,6 +15,7 @@
     <TestFramework>unittest</TestFramework>
     <UnitTestPattern>*_tests.py</UnitTestPattern>
     <UnitTestRootDirectory>..\..\tests</UnitTestRootDirectory>
+    <Name>RheoNetModSim</Name>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />

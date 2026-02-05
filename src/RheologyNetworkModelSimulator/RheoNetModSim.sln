@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FeneTrout", "FeneTrout.pyproj", "{521A3FE0-76F9-4386-A62A-6F25703E6941}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "RheoNetModSim", "RheoNetModSim.pyproj", "{521A3FE0-76F9-4386-A62A-6F25703E6941}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
