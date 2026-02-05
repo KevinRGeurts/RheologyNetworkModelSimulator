@@ -176,25 +176,25 @@ class Test_FENSStrand(unittest.TestCase):
         self.assertTupleEqual(exp_val, act_val)
 
     def test_strand_init_to_long(self):
-        self.assertRaises(AssertionError, FENSStrand, 1.0, 1.0, 1.0)
+        self.assertRaises(AssertionError, FENSStrand, 100.0, 100.0, 100.0)
 
     def test_property_getter_max_length(self):
-        exp_val = 1.0
+        exp_val = 100.0
         s = FENSStrand()
         act_val = s.max_length
         self.assertEqual(exp_val, act_val)
 
     def test_property_setter_qx_bad(self):
-        s = FENSStrand(0.1, 0.2, 0.3)
-        self.assertRaises(AssertionError, setattr, s, 'qx', 0.94)
+        s = FENSStrand(10.0, 20.0, 30.0)
+        self.assertRaises(AssertionError, setattr, s, 'qx', 94.0)
 
     def test_property_setter_qy_bad(self):
-        s = FENSStrand(0.1, 0.2, 0.3)
-        self.assertRaises(AssertionError, setattr, s, 'qy', 0.95)
+        s = FENSStrand(10.0, 20.0, 30.0)
+        self.assertRaises(AssertionError, setattr, s, 'qy', 95.0)
 
     def test_property_setter_qz_bad(self):
-        s = FENSStrand(0.1, 0.2, 0.3)
-        self.assertRaises(AssertionError, setattr, s, 'qz', 0.98)
+        s = FENSStrand(10.0, 20.0, 30.0)
+        self.assertRaises(AssertionError, setattr, s, 'qz', 98.0)
 
     def test_stress_XX(self):
         exp_val = 0.1*0.1

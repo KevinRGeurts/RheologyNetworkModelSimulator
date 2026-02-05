@@ -16,7 +16,7 @@ Exported exceptions:
 """
 
 # Standard imports
-from math import pow, sqrt, exp, lgamma, pi, sin, cos
+from math import pow, sqrt, exp, lgamma, pi, sin, cos, log
 from random import uniform
 
 class Strand:
@@ -195,7 +195,7 @@ class FENSStrand(Strand):
         :param qz: Internal Z-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
         """
         super().__init__(qx, qy, qz)
-        self._max_length = 1.0 # Override max length to 1.0 for FENS Strand
+        self._max_length = 100.0 # Override max length to 100.0 for FENS Strand. Must be >> 3.0
         assert(sqrt(qx*qx + qy*qy + qz*qz) <= self._max_length)
 
     def loss_rate(self):
@@ -249,23 +249,28 @@ class FENSStrand(Strand):
         :return: List of strands in the equilibrium ensemble, as [Strand objects]
         """
         e = []
-        # jeq: Normalization constant for equilibriium Hookean Dumbbell distribution function DPL2 Eq. (L) of Table 11.5-1
-        jeq = (1. / (2. * pi))
         for s in range(n):
-            p1 = 1.0
-            p2 = 0.0
-            # r, theta, phi: Internal coordinates of a network strand in spherical coordinates used to find equilibrium distribution.
-            r, theta, phi = 0.0, 0.0, 0.0
-            while p1>p2:
-                r = uniform(0.0,1.0)
-                theta = pi * uniform(0.0, 1.0)
-                phi = 2.0 * pi * uniform(0.0, 1.0)
-                p1 = uniform(0.0, 1.0)
-                p2 = jeq * ((1.0 - r * r) ** (1.0 / 2.0)) * r * r * sin(theta)
-            x = r * sin(theta) * cos(phi)
-            y = r * sin(theta) * sin(phi)
-            z = r * cos(theta)
-            e.append(FENSStrand(x, y, z))
+            # _qx:
+            p1 = uniform(0.0,1.0)
+            if p1 == 0.0: p1 = 1.0
+            p2 = uniform(0.0,1.0)
+            _qx = sqrt(-2.0 * log(p1)) * cos(2.0 * pi * p2)
+            # _qy:
+            p1 = uniform(0.0,1.0)
+            if p1 == 0.0: p1 = 1.0
+            p2 = uniform(0.0,1.0)
+            _qy = sqrt(-2.0 * log(p1)) * cos(2.0 * pi * p2)
+            # _qz:
+            p1 = uniform(0.0,1.0)
+            if p1 == 0.0: p1 = 1.0
+            p2 = uniform(0.0,1.0)
+            _qz = sqrt(-2.0 * log(p1)) * cos(2.0 * pi * p2)
+            if self.str_len_sqr() <= self.max_length * self.max_length:
+                # Strand is of legal length, so add to ensemble
+                e.append(FENSStrand(_qx, _qy, _qz))
+            else:
+                # TODO: Raise a specific exception instead
+                assert(False, "Generated strand of length greater than max length. This should be very unlikely, but if it happend!")
         return e
 
 

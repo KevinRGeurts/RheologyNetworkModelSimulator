@@ -425,7 +425,7 @@ def move_strand_fens_elongational(s, eps, gamdot):
     :return: None. Strand s's internal coordinates are updated upon return.
     """
 
-    alpha = 1.0 - pow(sqrt(s.str_len_sqr()), 2.0)
+    alpha = 1.0 - pow(sqrt(s.str_len_sqr()/s.max_length), 2.0)
 
     # Actual movement of the strand by Euler integration
     s.qx = s.qx - alpha * gamdot * .5 * s.qx * eps
