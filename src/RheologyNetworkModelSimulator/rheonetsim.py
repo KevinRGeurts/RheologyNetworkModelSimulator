@@ -1,5 +1,5 @@
 """
-This module defines the class FeneTroutSime which simulates a FENE (finitely extensible non-linear elastic) network model in elongational viscometric flow.
+This module defines classes for simulating network models for polymer melt rheology in viscometric flows.
 
 References:
 (1) Geurts, K.R. and L.E. Wedgewood, "A finitely extensible network strand model with nonlinear backbone
@@ -7,11 +7,19 @@ forces and entanglement kinetics," J. Chem. Phys., 1-January-1997, 106(1), pp. 3
 (2) Biller and Petruccione, J. Chem. Phys., 89(1), pp.577-582, 1988.  
 
 Exported classes:
-    FeneTroutSim: Class simulates a FENE (finitely extensible non-linear elastic) network model in elongational viscometric flow.
-    FeneTroutSimOut: Class attributes are the results of FeneTroutSim.run_sim() method.
+    RheoNetSim: Base class for simulators of rheology network models in viscometric flows.
+    ElongateNetSim: Subclass of RheoNetSim that simulates a network strand model in elongational viscometric flow.
+    RheoNetSimOut: Class to accumulate (over time steps) and then return time-averaged output from RheoNetSim.run_sim() method.
+    ElongateNetSimOut: Subclass of RheoNetSimOut to accumulate (over time steps) and then return time-averaged output from RheoNetSim.run_sim() method,
+                       with additional output values appropriate for elongational flow simulation.
+
+    Note that:
+    (1) A XNetSim class uses it's factory method _createSimOutObj() to create the correct type of XSimOut object.
+    (2) The XSimOut classes are populated by calls to XNetSim._computeTimestepOutputs() method.
 
 Exported functions:
-    None
+    move_strand_fene_elongational: Appy Euler integration to advance a FENE strand s, one time step eps, under elongation rate gamdot.
+    move_strand_fens_elongational: Appy Euler integration to advance a FENS strand s, one time step eps, under elongation rate gamdot.
 
 Exported exceptions:
     None
@@ -34,7 +42,7 @@ from RheologyNetworkModelSimulator.qplot import TextPlot
 
 class RheoNetSimOut:
     """
-    This is a base class for subclasses which accumulate (over time steps) and then return time-averaged output from RheoNetSim.run_sim().
+    This is a base class for subclasses which accumulate (over time steps) and then returns time-averaged output from RheoNetSim.run_sim().
     """
     def __init__(self):
         """
@@ -138,7 +146,7 @@ class RheoNetSim:
     Uses the method of Biller and Petruccione, J. Chem. Phys., 89(1), pp.577-582, 1988.  
 
     Nondimensionalization Scheme:
-        Strand internal coordinates are divided by Qo, the maximum strand length.
+        Strand internal coordinates are non-dimensionalized consistent with proto_strand argument to __init__().
         Loss rate is multiplied by the loss rate constant, Lambdao.
         Time step size is divided by the loss rate constant, Lamdao.
         Stress tensor is divided by NokT.
@@ -311,7 +319,7 @@ class ElongateNetSim(RheoNetSim):
     Uses the method of Biller and Petruccione, J. Chem. Phys., 89(1), pp.577-582, 1988.  
 
     Nondimensionalization Scheme:
-        Strand internal coordinates are divided by Qo, the maximum strand length.
+        Strand internal coordinates are non-dimensionalized consistent with proto_strand argument to __init__().
         Loss rate is multiplied by the loss rate constant, Lambdao.
         Time step size is divided by the loss rate constant, Lamdao.
         Stress tensor is divided by NokT.

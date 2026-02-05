@@ -1,23 +1,24 @@
 """
-This module defines the class Strand, which represents a FENE (finitely extensible non-linear elastic) strand in a network model for polymer melt rheology.
+This module defines the class Strand, and its subclasses, which represents polymer strands in a network model
+for polymer melt rheology.
 
 Exported classes:
-    Strand: Class to represent a FENE strand in a polymer network.
+    Strand: Base class to represent a strand in a polymer melt network model.
+    FENSStrand: Subclass of Strand to represent a FENS (finitely extensible network strand) strand in a polymer melt network model.
+    FENEStrand: Subclass of Strand to represent a FENE (finitely extensible non-linear elastic) strand in a polymer melt network model.
 
 Exported functions:
     beta: Function to compute the mathematical beta function.
-    generate_eq_ensemble: Function to create an equilibrium ensemble of strands.
-    write_ensemble_to_file: Function to write an ensemble of strands to a CSV file.
-    ensemble_stress: Function to compute the total stress tensor components for an ensemble of strands.
-    ensemble_q_ave: Function to compute the average strand length in an ensemble.
 
 Exported exceptions:
     None
 """
 
+
 # Standard imports
 from math import pow, sqrt, exp, lgamma, pi, sin, cos, log
 from random import uniform
+
 
 class Strand:
     """
@@ -35,7 +36,7 @@ class Strand:
     def __init__(self, qx=0.0, qy=0.0, qz=0.0):
         """
         Construct a Strand with given X, Y, and Z internal coordinate lengths, all non-dimensionalized by
-        dividing by the maximum strand length Qo ??Hookean has no max length??.
+        dividing by the maximum strand length Qo.
 
         :param qx: Internal X-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
         :param qy: Internal Y-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
@@ -181,21 +182,33 @@ class FENSStrand(Strand):
     The Hookean (linear) force law is used. The loss rate is constant.
 
     Nondimensionalization Scheme:
-        Strand internal coordinates are divided by Qo, the maximum strand length.
+        Strand internal coordinates are divided by sqrt(kT/H).
         Loss rate is multiplied by the loss rate constant, Lambdao.
         Time step size is divided by the loss rate constant, Lamdao.
         Stress tensor is divided by NokT.
+
+    NOTE: For the FENS Strand, the non-dimensionalization scheme is different than for the FENE Strand and the base Strand class.
+    This difference is consistent with the two journal articles that define these to strand models.
+    And it should be noted that for the FENS Strand, b is always = 100.0.
+    This can be rationalized through the relationship that q{n-dim-fene} = q/qo = q/bsqrt(kT/H) = q{n-dim-fens}/b.
+    The way this manifests in the code is that FENEStrands._max_length = 1.0, and FENSStrands._max_length = 100.0.
+    This is immaterial for comparing most results, although it does mean that direct comparison of strand length values
+    between the models is not meaninful without using the above formula to place them on a consisten basis.
+    A possible TODO is to refactor the code to have a consistent non-dimensionalization scheme across the Strand subclasses.
+    For now, I will opt to keep the non-dimensionalization scheme as it is, since it is consistent with the journal articles that
+    define these two strand models.
     """
     def __init__(self, qx=0.0, qy=0.0, qz=0.0):
         """
         Construct a Strand with given X, Y, and Z internal coordinate lengths, all non-dimensionalized by
-        dividing by the maximum strand length Qo.
-        :param qx: Internal X-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
-        :param qy: Internal Y-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
-        :param qz: Internal Z-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
+        dividing by sqrt(kT/H).
+        :param qx: Internal X-coordinate of Strand length, non-dimensionalizec by dividing by sqrt(kT/H), as float
+        :param qy: Internal Y-coordinate of Strand length, non-dimensionalizec by dividing by sqrt(kT/H), as float
+        :param qz: Internal Z-coordinate of Strand length, non-dimensionalizec by dividing by sqrt(kT/H), as float
         """
         super().__init__(qx, qy, qz)
-        self._max_length = 100.0 # Override max length to 100.0 for FENS Strand. Must be >> 3.0
+        # Override max length to 100.0 for FENS Strand. Must be >> 3.0. Non-dimensionalization by dividing by sqrt(kT/H).
+        self._max_length = 100.0 
         assert(sqrt(qx*qx + qy*qy + qz*qz) <= self._max_length)
 
     def loss_rate(self):

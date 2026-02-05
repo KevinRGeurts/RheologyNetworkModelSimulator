@@ -1,3 +1,8 @@
+"""
+This module contains unit tests for the TextPlot class and the qplot function.
+"""
+
+
 # standard imports
 import unittest
 from array import array
@@ -6,6 +11,7 @@ from io import StringIO
 
 # local imports
 from RheologyNetworkModelSimulator.qplot import TextPlot, qplot
+
 
 class Test_qplot_tests(unittest.TestCase):
     def test_TextPlot_qplot(self):

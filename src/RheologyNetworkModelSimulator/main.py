@@ -1,23 +1,23 @@
 """
-This module's __main__ collects simulation input interactively from the user, executes a FeneTroutSim, and prints some results.
+This module's __main__ first asks the user how they want to use the Network Model Simulator, then
+collects simulation input interactively from the user, executes a simulation, and prints some results.
 
 Exported classes:
     None
 
 Exported functions:
-    __main__: Collects input, runs simulation, prints results output
+    __main__: Requests simulation type, collects input, runs simulation, prints results output
+    Fene_Trout: Run an elongatonal flow simulation using the FENE network model.
+    Fens_Trout: Run an elongatonal flow simulation using the FENS network model.
+    debug: Run a debugging scenario (currently does nothing).
 
 Exported exceptions:
     None
 """
 
 
-# standard imports
-
-# Environment package imports
-from UserResponseCollector.UserQueryCommand import askForInt, askForFloat, askForPathSave, askForPathSave, askForStr, askForMenuSelection
-
 # local imports
+from UserResponseCollector.UserQueryCommand import askForInt, askForFloat, askForPathSave, askForPathSave, askForStr, askForMenuSelection
 from RheologyNetworkModelSimulator.rheonetsim import ElongateNetSim, move_strand_fene_elongational, move_strand_fens_elongational
 from RheologyNetworkModelSimulator.strand import FENEStrand, FENSStrand
 
@@ -130,6 +130,3 @@ if __name__ == '__main__':
         
         print('--------------------')
         response = askForMenuSelection(query_preface, query_dic)
-
-
-

@@ -11,8 +11,10 @@ Exported exceptions:
     None
 """
 
+
 # Standard imports
 from math import sqrt
+
 
 # Local imports
 from RheologyNetworkModelSimulator.strand import Strand
@@ -56,8 +58,9 @@ class Ensemble(object):
 
     def q_ave(self):
         """
-        Compute the average length of a strand in the network ensemble, divided by the maximum strand length.
-        :return: Average length of a strand in the network ensemble, divided by the maximum strand length, as float
+        Compute the average non-dimensional length of a strand in the network ensemble.
+        :return: Average non-dimensional length of a strand in the network ensemble, as float
+        Strand length is non-dimensionalized consistent self._strands.
         """
         total_q = 0.0
         for s in self._strands:
@@ -82,7 +85,7 @@ class Ensemble(object):
             piYX = piYX + s.stress_YX()
         return (piXX, piYY, piZZ, piYX)
 
-    # Implement methods so that a Hand can be treated as a container type. See Section 3.3.7. Emulating container types in
+    # Implement methods so that an Ensemble can be treated as a container type. See Section 3.3.7. Emulating container types in
     # https://docs.python.org/3/reference/datamodel.html#classgetitem-versus-getitem
     
     def __iter__(self):

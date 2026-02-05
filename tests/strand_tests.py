@@ -1,6 +1,14 @@
+"""
+This module contains unit tests for the Strand, FENEStrand, and FENSStrand classes, as well as the beta function.
+"""
+
+
+# Standard imports
 import unittest
 
+# Local imports
 from RheologyNetworkModelSimulator.strand import Strand, FENEStrand, beta, FENSStrand
+
 
 class Test_beta(unittest.TestCase):
     def test_beta(self):
@@ -233,15 +241,14 @@ class Test_FENSStrand(unittest.TestCase):
         # TODO: Investigate why this needs almost equal
         self.assertAlmostEqual(exp_val, act_val, 5)
 
-    # TODO: Reintroduce this test.
-    # def test_generate_eq_ensemble(self):
-    #     from random import seed
-    #     exp_val = (0.1314922734575693, 0.03212588679044972, 0.029485861493129577)
-    #     seed(1234567890)
-    #     e = FENSStrand().generate_eq_ensemble(10)
-    #     self.assertEqual(10, len(e))
-    #     act_val = (e[0].qx, e[0].qy, e[0].qz)
-    #     self.assertTupleEqual(exp_val, act_val)
+    def test_generate_eq_ensemble(self):
+        from random import seed
+        exp_val = (-0.2686617612333387, 0.44611821880006447, 0.17019087101967528)
+        seed(1234567890)
+        e = FENSStrand().generate_eq_ensemble(10)
+        self.assertEqual(10, len(e))
+        act_val = (e[0].qx, e[0].qy, e[0].qz)
+        self.assertTupleEqual(exp_val, act_val)
 
 
 if __name__ == '__main__':

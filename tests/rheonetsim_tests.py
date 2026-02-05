@@ -1,12 +1,19 @@
+"""
+This module contains unit tests for:
+    (1) RheoNetSim and ElongateNetSim classes
+    (2) Their associated output classes, RheoNetSimOut and ElongateNetSimOut
+    (3) The move_strand_fene_elongational and move_strand_fens_elongational functions
+"""
 
-# Standard library imports
+
+# Standard imports
 import unittest
 from random import seed
 from array import array
 
 # Local imports
 from RheologyNetworkModelSimulator.rheonetsim import ElongateNetSim, RheoNetSimOut, ElongateNetSimOut, move_strand_fene_elongational, RheoNetSim, move_strand_fens_elongational
-from RheologyNetworkModelSimulator.strand import FENEStrand
+from RheologyNetworkModelSimulator.strand import FENEStrand, FENSStrand
 from RheologyNetworkModelSimulator.ensemble import Ensemble
 from RheologyNetworkModelSimulator.qplot import TextPlot
 
@@ -263,8 +270,7 @@ class Test_ElongateNetSim(unittest.TestCase):
         self.assertAlmostEqual(exp_val.trout1_ave, act_val.trout1_ave, 9)
         self.assertAlmostEqual(exp_val.trout2_ave, act_val.trout2_ave, 9)
 
-
-    def test_run_sim(self):
+    def test_run_sim_elongate_fene(self):
         seed(1234567890)
 
         exp_val = {'Qave': 0.16110272799636224, 'n/no': 0.99, 'piYX': 0.07245743211970784, 'trouton 1': 0.04737104142315748, 'trouton 2': 0.0021919416527666088}
@@ -282,6 +288,28 @@ class Test_ElongateNetSim(unittest.TestCase):
 
         _proto_strand = FENEStrand(qx=0, qy=0, qz=0, b=fene_b, n=fene_n, mm=fene_mm)
         sim = ElongateNetSim(sim_input, _proto_strand, move_strand_fene_elongational)
+        act_val = sim.run_sim()
+        print(act_val)
+        self.assertAlmostEqual(exp_val['Qave'], act_val.Q_ave, 15)
+        self.assertAlmostEqual(exp_val['n/no'], act_val.n_ave, 15)
+        self.assertAlmostEqual(exp_val['piYX'], act_val.piYX_ave,15)
+        self.assertAlmostEqual(exp_val['trouton 1'], act_val.trout1_ave, 15)
+        self.assertAlmostEqual(exp_val['trouton 2'], act_val.trout2_ave, 15)
+
+    def test_run_sim_elongate_fens(self):
+        seed(1234567890)
+
+        exp_val = {'Qave': 1.5689606851693894, 'n/no': 1.01, 'piYX': -0.0614371945729071, 'trouton 1': -0.0009294645015770726, 'trouton 2': -0.018659087231995483}
+
+        sim_input = {}
+        sim_input['gamdot'] = 10.0
+        sim_input['begstrand'] = 100
+        sim_input['eps'] = 0.001
+        sim_input['steps'] = int(0.01 / sim_input['eps'])
+        sim_input['outfile'] = 'testfenstrout.out'
+
+        _proto_strand = FENSStrand(qx=0, qy=0, qz=0)
+        sim = ElongateNetSim(sim_input, _proto_strand, move_strand_fens_elongational)
         act_val = sim.run_sim()
         print(act_val)
         self.assertAlmostEqual(exp_val['Qave'], act_val.Q_ave, 15)
