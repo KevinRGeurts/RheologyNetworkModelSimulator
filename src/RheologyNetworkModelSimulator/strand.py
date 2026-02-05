@@ -111,12 +111,10 @@ class Strand:
     def loss_prob(self, eps):
         """
         Compute the probability of the Strand disentangling from the network during a time step of length eps.
-        Must be implemented by subclasses.
         :param eps: Time step size, divided by the loss rate constant, Lamdao, as float
         :return: Probability of the Strand disentangling from the network during a time step of length eps, as float
         """
-        raise NotImplementedError("Subclasses must implement loss_prob method.")
-        return None
+        return 1.0 - exp(-1.0 * self.loss_rate() * eps)
 
     # XX component of total stress tensor
     def stress_XX(self):
@@ -167,6 +165,108 @@ class Strand:
         """
         raise NotImplementedError("Subclasses must implement generate_eq_ensemble method.")
         return None
+
+
+class FENSStrand(Strand):
+    """
+    Represent a FENS (finitely extensible network strand) strand in a network model for polymer melt rheology.
+
+    References:
+    
+    (1) Wedgewood, L.E. and K.R. Geurts, Rheol. Acta 34, 196 (1995).
+    (2) Geurts, K.R. and L.E. Wedgewood, "A finitely extensible network strand model with nonlinear backbone
+        forces and entanglement kinetics," J. Chem. Phys., 1-January-1997, 106(1), pp. 339-346.
+
+    Non-affine Motion prefactor is  1-(Q/Qo)^n. No strand may exceed the nondimensional length of one.
+    The Hookean (linear) force law is used. The loss rate is constant.
+
+    Nondimensionalization Scheme:
+        Strand internal coordinates are divided by Qo, the maximum strand length.
+        Loss rate is multiplied by the loss rate constant, Lambdao.
+        Time step size is divided by the loss rate constant, Lamdao.
+        Stress tensor is divided by NokT.
+    """
+    def __init__(self, qx=0.0, qy=0.0, qz=0.0):
+        """
+        Construct a Strand with given X, Y, and Z internal coordinate lengths, all non-dimensionalized by
+        dividing by the maximum strand length Qo.
+        :param qx: Internal X-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
+        :param qy: Internal Y-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
+        :param qz: Internal Z-coordinate of Strand length, non-dimensionalizec by dividing by Qo, the maximum strand length, as float
+        """
+        super().__init__(qx, qy, qz)
+        self._max_length = 1.0 # Override max length to 1.0 for FENS Strand
+        assert(sqrt(qx*qx + qy*qy + qz*qz) <= self._max_length)
+
+    def loss_rate(self):
+        """
+        Compute the loss_rate for the Strand. Loss rate is multiplied by the loss rate constant, Lambdao.
+        :return: Loss rate for strand, multiplied by the loss rate constant, Lambdao, as float
+        """
+        return 1.0
+
+    # XX component of total stress tensor
+    def stress_XX(self):
+        """
+        Compute the XX-component of the strand's contrribution to the total stress tensor of the network.
+        Stress tensor is divided by NokT.
+        :return: XX-component of the strand's contrribution to the total stress tensor of the network, as float
+        """
+        return self.qx * self.qx
+
+    # YY component of total stress tensor
+    def stress_YY(self):
+        """
+        Compute the YY-component of the strand's contrribution to the total stress tensor of the network.
+        Stress tensor is divided by NokT.
+        :return: YY-component of the strand's contrribution to the total stress tensor of the network, as float
+        """
+        return self.qy * self.qy
+
+    # ZZ component of total stress tensor
+    def stress_ZZ(self):
+        """
+        Compute the ZZ-component of the strand's contrribution to the total stress tensor of the network.
+        Stress tensor is divided by NokT.
+        :return: ZZ-component of the strand's contrribution to the total stress tensor of the network, as float
+        """
+        return self.qz * self.qz
+
+    # YX component of total stress tensor
+    def stress_YX(self):
+        """
+        Compute the YX-component of the strand's contrribution to the total stress tensor of the network.
+        Stress tensor is divided by NokT.
+        :return: YX-component of the strand's contrribution to the total stress tensor of the network, as float
+        """
+        return self.qy * self.qx
+
+    def generate_eq_ensemble(self, n=1):
+        """
+        Create an ensemble of size n number of strands, where the distribution of strand lengths will
+        fit the equilibrium distribution.
+        :param n: Number of strands to generate for the ensemble, as int
+        :return: List of strands in the equilibrium ensemble, as [Strand objects]
+        """
+        e = []
+        # jeq: Normalization constant for equilibriium Hookean Dumbbell distribution function DPL2 Eq. (L) of Table 11.5-1
+        jeq = (1. / (2. * pi))
+        for s in range(n):
+            p1 = 1.0
+            p2 = 0.0
+            # r, theta, phi: Internal coordinates of a network strand in spherical coordinates used to find equilibrium distribution.
+            r, theta, phi = 0.0, 0.0, 0.0
+            while p1>p2:
+                r = uniform(0.0,1.0)
+                theta = pi * uniform(0.0, 1.0)
+                phi = 2.0 * pi * uniform(0.0, 1.0)
+                p1 = uniform(0.0, 1.0)
+                p2 = jeq * ((1.0 - r * r) ** (1.0 / 2.0)) * r * r * sin(theta)
+            x = r * sin(theta) * cos(phi)
+            y = r * sin(theta) * sin(phi)
+            z = r * cos(theta)
+            e.append(FENSStrand(x, y, z))
+        return e
 
 
 class FENEStrand(Strand):
@@ -224,14 +324,6 @@ class FENEStrand(Strand):
         :return: Loss rate for strand, multiplied by the loss rate constant, Lambdao, as float
         """
         return 1.0 / (1.0 - pow(sqrt(self.str_len_sqr()), (self.mm * self.n)))
-
-    def loss_prob(self, eps):
-        """
-        Compute the probability of the Strand disentangling from the network during a time step of length eps.
-        :param eps: Time step size, divided by the loss rate constant, Lamdao, as float
-        :return: Probability of the Strand disentangling from the network during a time step of length eps, as float
-        """
-        return 1.0 - exp(-1.0 * self.loss_rate() * eps)
 
     # XX component of total stress tensor
     def stress_XX(self):

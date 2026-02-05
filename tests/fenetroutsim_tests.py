@@ -5,8 +5,8 @@ from random import seed
 from array import array
 
 # Local imports
-from RheologyNetworkModelSimulator.fenetroutsim import FeneTroutSim, RheoNetSimOut, FeneTroutSimOut, move_strand_fene_elongational, RheoNetSim
-from RheologyNetworkModelSimulator.strand import Strand, FENEStrand
+from RheologyNetworkModelSimulator.fenetroutsim import ElongateNetSim, RheoNetSimOut, ElongateNetSimOut, move_strand_fene_elongational, RheoNetSim, move_strand_fens_elongational
+from RheologyNetworkModelSimulator.strand import FENEStrand
 from RheologyNetworkModelSimulator.ensemble import Ensemble
 from RheologyNetworkModelSimulator.qplot import TextPlot
 
@@ -39,9 +39,9 @@ class Test_RheoNetSimOut(unittest.TestCase):
         act_val = sim_out.final_output()
         self.assertEqual(exp_val, act_val)
 
-class FENETroutSimOut(unittest.TestCase):
+class Test_ElongateNetSimOut(unittest.TestCase):
     def test_str(self):
-        sim_out = FeneTroutSimOut()
+        sim_out = ElongateNetSimOut()
         sim_out.n_vals.append(10000)
         sim_out.Q_vals.append(0.87)
         sim_out.piYX_vals.append(10.0)
@@ -53,7 +53,7 @@ class FENETroutSimOut(unittest.TestCase):
         self.assertEqual(exp_val, act_val)
 
     def test_time_step_output(self):
-        sim_out = FeneTroutSimOut()
+        sim_out = ElongateNetSimOut()
         sim_out.n_vals.append(10000)
         sim_out.Q_vals.append(0.87)
         sim_out.piYX_vals.append(10.0)
@@ -65,7 +65,7 @@ class FENETroutSimOut(unittest.TestCase):
         self.assertEqual(exp_val, act_val)
 
     def test_final_output(self):
-        sim_out = FeneTroutSimOut()
+        sim_out = ElongateNetSimOut()
         sim_out.trout1_vals.append(8.5)
         sim_out.trout1_vals.append(7.0)
         sim_out.time_vals.append(0.2)
@@ -99,7 +99,7 @@ class Test_RheoNetSim(unittest.TestCase):
         self.assertRaises(NotImplementedError, RheoNetSim, strand_mover=str)
 
 
-class Test_FENETroutSim(unittest.TestCase):
+class Test_ElongateNetSim(unittest.TestCase):
     def test_move_fene_strand_elongational(self):
         # def move_strand_fene_elongational(s, eps, gamdot):
         exp_val = (0.09570000000000001, 0.19140000000000001, 0.3258)
@@ -108,14 +108,22 @@ class Test_FENETroutSim(unittest.TestCase):
         act_val = (s.qx, s.qy, s.qz)
         self.assertTupleEqual(exp_val, act_val)
 
+    def test_move_fens_strand_elongational(self):
+        # def move_strand_fene_elongational(s, eps, gamdot):
+        exp_val = (0.09570000000000001, 0.19140000000000001, 0.3258)
+        s = FENEStrand(qx=0.1, qy=0.2, qz=0.3)
+        move_strand_fens_elongational(s, 0.001, 100.0)
+        act_val = (s.qx, s.qy, s.qz)
+        self.assertTupleEqual(exp_val, act_val)
+
     def test_init(self):
         s = FENEStrand()
-        sim = FeneTroutSim({}, s, move_strand_fene_elongational)
-        self.assertIsInstance(sim._sim_output, FeneTroutSimOut)
+        sim = ElongateNetSim({}, s, move_strand_fene_elongational)
+        self.assertIsInstance(sim._sim_output, ElongateNetSimOut)
 
     def test_getOutFileHeader(self):
         s = FENEStrand()
-        sim = FeneTroutSim({}, s, move_strand_fene_elongational)
+        sim = ElongateNetSim({}, s, move_strand_fene_elongational)
         exp_val = "Time, Strands, <Q>, piYX, trouton_1, trouton_2"
         act_val = sim._getOutFileHeader()
         self.assertEqual(exp_val, act_val)
@@ -132,9 +140,9 @@ class Test_FENETroutSim(unittest.TestCase):
         sim_input['outfile'] = 'testfenetrout.out'
         s1 = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=fene_b, n=fene_n, mm=fene_mm)
         s2 = FENEStrand(qx=0.3, qy=0.1, qz=0.2, b=fene_b, n=fene_n, mm=fene_mm)
-        sim = FeneTroutSim(sim_input, s1, move_strand_fene_elongational)
+        sim = ElongateNetSim(sim_input, s1, move_strand_fene_elongational)
         we = Ensemble([s1, s2])
-        exp_val = FeneTroutSimOut()
+        exp_val = ElongateNetSimOut()
         exp_val.n_vals.append(2)
         exp_val.piYX_vals.append(0.058139535)
         exp_val.Q_vals.append(0.374165739)
@@ -172,9 +180,9 @@ class Test_FENETroutSim(unittest.TestCase):
         sim_input['outfile'] = 'testfenetrout.out'
         s1 = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=fene_b, n=fene_n, mm=fene_mm)
         s2 = FENEStrand(qx=0.3, qy=0.1, qz=0.2, b=fene_b, n=fene_n, mm=fene_mm)
-        sim = FeneTroutSim(sim_input, s1, move_strand_fene_elongational)
+        sim = ElongateNetSim(sim_input, s1, move_strand_fene_elongational)
         we = Ensemble([s1, s2])
-        exp_val = FeneTroutSimOut()
+        exp_val = ElongateNetSimOut()
         exp_val.n_vals.append(2)
         exp_val.piYX_vals.append(0.058139535)
         exp_val.Q_vals.append(0.374165739)
@@ -210,9 +218,9 @@ class Test_FENETroutSim(unittest.TestCase):
         sim_input['outfile'] = 'testfenetrout.out'
         s1 = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=fene_b, n=fene_n, mm=fene_mm)
         s2 = FENEStrand(qx=0.3, qy=0.1, qz=0.2, b=fene_b, n=fene_n, mm=fene_mm)
-        sim = FeneTroutSim(sim_input, s1, move_strand_fene_elongational)
+        sim = ElongateNetSim(sim_input, s1, move_strand_fene_elongational)
         we = Ensemble([s1, s2])
-        exp_val = FeneTroutSimOut()
+        exp_val = ElongateNetSimOut()
         exp_val.n_vals.append(2)
         exp_val.piYX_vals.append(0.058139535)
         exp_val.Q_vals.append(0.374165739)
@@ -273,7 +281,7 @@ class Test_FENETroutSim(unittest.TestCase):
         sim_input['outfile'] = 'testfenetrout.out'
 
         _proto_strand = FENEStrand(qx=0, qy=0, qz=0, b=fene_b, n=fene_n, mm=fene_mm)
-        sim = FeneTroutSim(sim_input, _proto_strand, move_strand_fene_elongational)
+        sim = ElongateNetSim(sim_input, _proto_strand, move_strand_fene_elongational)
         act_val = sim.run_sim()
         print(act_val)
         self.assertAlmostEqual(exp_val['Qave'], act_val.Q_ave, 15)

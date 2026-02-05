@@ -81,9 +81,9 @@ class RheoNetSimOut:
         return result
 
 
-class FeneTroutSimOut(RheoNetSimOut):
+class ElongateNetSimOut(RheoNetSimOut):
     """
-    A class to accumulate (over time steps) and then return time-averaged output from FeneTroutSim.run_sim().
+    A class to accumulate (over time steps) and then return time-averaged output from TroutSim.run_sim().
     """
     def __init__(self):
         """
@@ -304,11 +304,9 @@ class RheoNetSim:
         return self._sim_output
 
 
-# TODO: Should this class just be TroutNetSim, since it is specific to FENE strands? THen the move function can't be
-# a method.
-class FeneTroutSim(RheoNetSim):
+class ElongateNetSim(RheoNetSim):
     """
-    Simulates a FENE (finitely extensible non-linear elastic)network model in elongational viscometric flow.
+    Simulates a network strand model in elongational viscometric flow.
 
     Uses the method of Biller and Petruccione, J. Chem. Phys., 89(1), pp.577-582, 1988.  
 
@@ -336,7 +334,7 @@ class FeneTroutSim(RheoNetSim):
         Create and return an output object appropriate for this simulation class.
         :return: An output object appropriate for this simulation class, RheoNetSimOut subclass object
         """
-        return FeneTroutSimOut()
+        return ElongateNetSimOut()
 
     def _getOutFileHeader(self):
         """
@@ -406,6 +404,28 @@ def move_strand_fene_elongational(s, eps, gamdot):
     """
 
     alpha = 1.0 - pow(sqrt(s.str_len_sqr()), s.n)
+
+    # Actual movement of the strand by Euler integration
+    s.qx = s.qx - alpha * gamdot * .5 * s.qx * eps
+    s.qy = s.qy - alpha * gamdot * .5 * s.qy * eps
+    s.qz = s.qz + alpha * gamdot * s.qz * eps
+
+    if s.max_length is not None:
+        if sqrt(s.str_len_sqr()) > s.max_length:
+            s.qz = copysign(sqrt(0.9999*s.max_length - s.qy * s.qy - s.qx * s.qx), s.qz)
+
+
+# Appy Euler integration to advance a strand s, one time step eps, under elongation rate gamdot.
+def move_strand_fens_elongational(s, eps, gamdot):
+    """
+    Apply Euler integration to advance the internal coordinates of a network strand by one time step.
+    :param s: Network Strand to advance, as Strand object
+    :param eps: Time step size, as float
+    :param gamdot: Elongation rate, as float
+    :return: None. Strand s's internal coordinates are updated upon return.
+    """
+
+    alpha = 1.0 - pow(sqrt(s.str_len_sqr()), 2.0)
 
     # Actual movement of the strand by Euler integration
     s.qx = s.qx - alpha * gamdot * .5 * s.qx * eps
