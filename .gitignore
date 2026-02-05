@@ -167,3 +167,4 @@ cython_debug/
 /src/RheologyNetworkModelSimulator/eq_ensemble_strands.csv
 /src/RheologyNetworkModelSimulator/.vs/RheoNetModSim/v17
 /src/RheologyNetworkModelSimulator/.vs/RheoNetModSim
+/testfenstrout.out
