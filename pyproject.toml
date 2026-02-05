@@ -4,18 +4,18 @@ build-backend = "pdm.backend"
 
 [tool.pdm.build]
 includes = ["src/RheologyNetworkModelSimulator/*.py"]
-source-includes = ["tests/", "src/RheologyNetworkModelSimulator/Documentation/Developer_Documentation.md", "src/RheologyNetworkModelSimulator/Documentation/fenetrout.f", "src/RheologyNetworkModelSimulator/FeneTrout.sln", "src/RheologyNetworkModelSimulator/FeneTrout.pyproj"]
+source-includes = ["tests/", "src/RheologyNetworkModelSimulator/Documentation/Developer_Documentation.md", "src/RheologyNetworkModelSimulator/Documentation/fenetrout.f", "src/RheologyNetworkModelSimulator/RheoNetModSim.sln", "src/RheologyNetworkModelSimulator/RheoNetModSim.pyproj"]
 
 [project]
 name = "RheologyNetworkModelSimulator"
 version = "0.1.0"
 dependencies = [
-	"UserResponseCollector>=1.0.6",
+	"UserResponseCollector>=1.1.0",
 ]
 authors = [
   { name="Kevin R. Geurts", email="kevin.r.geurts@gmail.com" },
 ]
-description = "RheologyNetworkModelSimulator defines the class FeneTroutSim which simulates a FENE (finitely extensible non-linear elastic) network model in elongational viscometric flow."
+description = "RheologyNetworkModelSimulator simulates FENE (finitely extensible non-linear elastic) and FENS (Finitely Extensible Network Strand) network models for polymer melt rheology in elongational viscometric flow."
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
@@ -28,7 +28,7 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
-keywords = ["console", "desktop", "simulator", "rheology", "network model"]
+keywords = ["console", "desktop", "simulator", "rheology", "network model", "polymer melt"]
 
 [project.urls]
 Homepage = "https://github.com/KevinRGeurts/RheologyNetworkModelSimulator"
