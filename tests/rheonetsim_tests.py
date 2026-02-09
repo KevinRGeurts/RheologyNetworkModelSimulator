@@ -10,9 +10,11 @@ This module contains unit tests for:
 import unittest
 from random import seed
 from array import array
+from math import sqrt
 
 # Local imports
 from RheologyNetworkModelSimulator.rheonetsim import ElongateNetSim, RheoNetSimOut, ElongateNetSimOut, move_strand_fene_elongational, RheoNetSim, move_strand_fens_elongational
+from RheologyNetworkModelSimulator.rheonetsim import move_strand_fens_shear, move_strand_fene_shear, ShearNetSim, ShearNetSimOut
 from RheologyNetworkModelSimulator.strand import FENEStrand, FENSStrand
 from RheologyNetworkModelSimulator.ensemble import Ensemble
 from RheologyNetworkModelSimulator.qplot import TextPlot
@@ -89,12 +91,68 @@ class Test_ElongateNetSimOut(unittest.TestCase):
         _npts=len(sim_out.trout1_vals)
         _x=[sim_out.time_vals]
         _y=[sim_out.trout1_vals]
-        _titl1='FENE Network Start-up of Elongational Flow Simulation'
+        _titl1='Start-up of Elongational Flow Simulation'
         _titl2='O: Elongational Viscosity vs Time'
         sim_out.trout1_plt = TextPlot(ncur=1, npts=_npts, x=_x, y=_y, symbol=_symbol, titl1=_titl1, titl2=_titl2)
 
         sim_out.trout1_plt=None
         exp_val = f"Avg n: {sim_out.n_ave}\nAvg piYX: {sim_out.piYX_ave}\nAvg Q: {sim_out.Q_ave}\nAvg Trout 1: {sim_out.trout1_ave}\nAvg Trout 2: {sim_out.trout2_ave}\n\n{sim_out.trout1_plt}"
+        act_val = sim_out.final_output()
+        self.assertEqual(exp_val, act_val)
+
+
+class Test_ShearNetSimOut(unittest.TestCase):
+    def test_str(self):
+        sim_out = ShearNetSimOut()
+        sim_out.n_vals.append(10000)
+        sim_out.Q_vals.append(0.87)
+        sim_out.piYX_vals.append(10.0)
+        sim_out.viscosity_vals.append(8.5)
+        sim_out.psi1_vals.append(0.2)
+        sim_out.psi2_vals.append(0.5)
+        sim_out.viscosity_plt=None
+        exp_val = f"{sim_out.n_vals[0]}, {sim_out.piYX_vals[0]}, {sim_out.Q_vals[0]}, {sim_out.viscosity_vals[0]}, {sim_out.psi1_vals[0]}, {sim_out.psi2_vals[0]}"
+        act_val = str(sim_out)
+        self.assertEqual(exp_val, act_val)
+
+    def test_time_step_output(self):
+        sim_out = ShearNetSimOut()
+        sim_out.n_vals.append(10000)
+        sim_out.Q_vals.append(0.87)
+        sim_out.piYX_vals.append(10.0)
+        sim_out.viscosity_vals.append(8.5)
+        sim_out.psi1_vals.append(0.2)
+        sim_out.psi2_vals.append(0.5)
+        sim_out.viscosity_plt=None
+        exp_val = f"n: {sim_out.n_vals[0]}, piYX: {sim_out.piYX_vals[0]}, Q: {sim_out.Q_vals[0]}, Viscosity: {sim_out.viscosity_vals[0]}, First Normal Stress Coefficient: {sim_out.psi1_vals[0]}, Second Normal Stress Coefficient: {sim_out.psi2_vals[0]}"
+        act_val = sim_out.time_step_output()
+        self.assertEqual(exp_val, act_val)
+
+    def test_final_output(self):
+        sim_out = ShearNetSimOut()
+        sim_out.viscosity_vals.append(8.5)
+        sim_out.viscosity_vals.append(7.0)
+        sim_out.time_vals.append(0.2)
+        sim_out.time_vals.append(0.3)
+        sim_out.n_ave = 0.95
+        sim_out.Q_ave = 0.87
+        sim_out.piYX_ave = 10.0
+        sim_out.viscosity_ave = 8.5
+        sim_out.psi1_ave = 0.2
+        sim_out.psi2_ave = 0.3
+
+        # Make a TextPlot object for plotting elongational viscosity vs time
+        _symbol = array('u')
+        _symbol.append('O')
+        _npts=len(sim_out.viscosity_vals)
+        _x=[sim_out.time_vals]
+        _y=[sim_out.viscosity_vals]
+        _titl1='Start-up of Shear Flow Simulation'
+        _titl2='O: Shear Viscosity vs Time'
+        sim_out.viscosity_plt = TextPlot(ncur=1, npts=_npts, x=_x, y=_y, symbol=_symbol, titl1=_titl1, titl2=_titl2)
+
+        sim_out.viscosity_plt=None
+        exp_val = f"Avg n: {sim_out.n_ave}\nAvg piYX: {sim_out.piYX_ave}\nAvg Q: {sim_out.Q_ave}\nAvg Viscosity: {sim_out.viscosity_ave}\nAvg First Normal Stress Coefficient: {sim_out.psi1_ave}\nAvg Second Normal Stress Coefficient: {sim_out.psi2_ave}\n\n{sim_out.viscosity_plt}"
         act_val = sim_out.final_output()
         self.assertEqual(exp_val, act_val)
 
@@ -317,6 +375,38 @@ class Test_ElongateNetSim(unittest.TestCase):
         self.assertAlmostEqual(exp_val['piYX'], act_val.piYX_ave,15)
         self.assertAlmostEqual(exp_val['trouton 1'], act_val.trout1_ave, 15)
         self.assertAlmostEqual(exp_val['trouton 2'], act_val.trout2_ave, 15)
+
+
+class Test_ShearNetSim(unittest.TestCase):
+    def test_move_fene_strand_shear(self):
+        s = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=100.0, n=2.0, mm=1.0)
+        alpha = 1.0 - pow(sqrt(s.str_len_sqr()), s.n)
+        qx_next = s.qx + alpha * 100.0 * s.qy * 0.001
+        exp_val = (qx_next, 0.2, 0.3)
+        move_strand_fene_shear(s, 0.001, 100.0)
+        act_val = (s.qx, s.qy, s.qz)
+        self.assertTupleEqual(exp_val, act_val)
+
+    def test_move_fens_strand_shear(self):
+        s = FENSStrand(qx=0.1, qy=0.2, qz=0.3)
+        alpha = 1.0 - pow(sqrt(s.str_len_sqr()/s.max_length), 2.0)
+        qx_next = s.qx + alpha * 100.0 * s.qy * 0.001
+        exp_val = (qx_next, 0.2, 0.3)
+        move_strand_fens_shear(s, 0.001, 100.0)
+        act_val = (s.qx, s.qy, s.qz)
+        self.assertTupleEqual(exp_val, act_val)
+
+    def test_init(self):
+        s = FENEStrand()
+        sim = ShearNetSim({}, s, move_strand_fene_shear)
+        self.assertIsInstance(sim._sim_output, ShearNetSimOut)
+
+    def test_getOutFileHeader(self):
+        s = FENEStrand()
+        sim = ShearNetSim({}, s, move_strand_fene_shear)
+        exp_val = "Time, Strands, <Q>, piYX, viscosity, first normal stress coefficient, second normal stress coefficient"
+        act_val = sim._getOutFileHeader()
+        self.assertEqual(exp_val, act_val)
 
 
 if __name__ == '__main__':

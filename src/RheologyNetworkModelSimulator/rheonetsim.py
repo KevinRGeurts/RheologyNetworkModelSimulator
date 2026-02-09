@@ -91,7 +91,7 @@ class RheoNetSimOut:
 
 class ElongateNetSimOut(RheoNetSimOut):
     """
-    A class to accumulate (over time steps) and then return time-averaged output from TroutSim.run_sim().
+    A class to accumulate (over time steps) and then return time-averaged output from ElongateNetSim.run_sim().
     """
     def __init__(self):
         """
@@ -100,7 +100,7 @@ class ElongateNetSimOut(RheoNetSimOut):
             trout2_ave = Time-averaged, non-dimensional Trouton 2 viscosity, float
         Arrays of values over time steps in simulation output:
             trout1_vals = Array of Trouton 1 viscosity values in simulation output, array of float
-            trout2_vals = Array of Trouton 3 viscosity values in simulation output, array of float
+            trout2_vals = Array of Trouton 2 viscosity values in simulation output, array of float
         TextPlot objects from simulation:
             trout1_plt = TextPlot object plot of Trouton 1 viscosity
         """
@@ -136,6 +136,60 @@ class ElongateNetSimOut(RheoNetSimOut):
         """
         result = super().final_output()
         result += f"Avg Trout 1: {self.trout1_ave}\nAvg Trout 2: {self.trout2_ave}\n\n{self.trout1_plt}"
+        return result
+
+
+class ShearNetSimOut(RheoNetSimOut):
+    """
+    A class to accumulate (over time steps) and then return time-averaged output from ShearNetSim.run_sim().
+    """
+    def __init__(self):
+        """
+        Time-averaged output values from simulation:
+            viscosity_ave = Time-averaged, non-dimensional viscosity, float
+            psi1_ave = Time-averaged, non-dimensional first normal stress coefficient, float
+            psi2_ave = Time-averaged, non-dimensional second normal stress coefficient, float
+        Arrays of values over time steps in simulation output:
+            viscosity_vals = Array of viscosity values in simulation output, array of float
+            psi1_vals = Array of first normal stress coefficient values in simulation output, array of float
+            psi2_vals = Array of second normal stress coefficient values in simulation output, array of float
+        TextPlot objects from simulation:
+            visocisty_plt = TextPlot object plot of viscosity
+        """
+        super().__init__()
+        self.viscosity_ave=0
+        self.psi1_ave=0
+        self.psi2_ave=0
+        self.viscosity_vals = array('f')
+        self.psi1_vals = array('f')
+        self.psi2_vals = array('f')
+        self.viscosity_plt=None
+
+    def __str__(self):
+        """
+        Convert object to str, for example, to write results to file.
+        :return: Class attributes converted to a string representation, suitable for writing results to a file, as str
+        """
+        result = super().__str__()
+        result += f", {self.viscosity_vals[len(self.viscosity_vals)-1]}, {self.psi1_vals[len(self.psi1_vals)-1]}, {self.psi2_vals[len(self.psi2_vals)-1]}"
+        return result
+
+    def time_step_output(self):
+        """
+        Generate a string representation of labeled output values for the latest time step, for example, to print to show progress of simulation.
+        :return: Class attributes converted to a string representation, suitable for printing time step results to show progress of simulation, as str
+        """
+        result = super().time_step_output()
+        result += f", Viscosity: {self.viscosity_vals[len(self.viscosity_vals)-1]}, First Normal Stress Coefficient: {self.psi1_vals[len(self.psi1_vals)-1]}, Second Normal Stress Coefficient: {self.psi2_vals[len(self.psi2_vals)-1]}"
+        return result
+
+    def final_output(self):
+        """
+        Generate a string representation of labeled output values for the final time-averaged results, for example, to print at the end of simulation.
+        :return: Class attributes converted to a string representation, suitable for printing final results at end of simulation, as str
+        """
+        result = super().final_output()
+        result += f"Avg Viscosity: {self.viscosity_ave}\nAvg First Normal Stress Coefficient: {self.psi1_ave}\nAvg Second Normal Stress Coefficient: {self.psi2_ave}\n\n{self.viscosity_plt}"
         return result
 
 
@@ -394,9 +448,101 @@ class ElongateNetSim(RheoNetSim):
             _npts=len(self._sim_output.trout1_vals)
             _x=[self._sim_output.time_vals]
             _y=[self._sim_output.trout1_vals]
-            _titl1='FENE Network Start-up of Elongational Flow Simulation'
+            _titl1='Start-up of Elongational Flow Simulation'
             _titl2='O: Elongational Viscosity vs Time'
             self._sim_output.trout1_plt = TextPlot(ncur=1, npts=_npts, x=_x, y=_y, symbol=_symbol, titl1=_titl1, titl2=_titl2)
+
+        return None
+
+
+class ShearNetSim(RheoNetSim):
+    """
+    Simulates a network strand model in shear viscometric flow.
+
+    Uses the method of Biller and Petruccione, J. Chem. Phys., 89(1), pp.577-582, 1988.  
+
+    Nondimensionalization Scheme:
+        Strand internal coordinates are non-dimensionalized consistent with proto_strand argument to __init__().
+        Loss rate is multiplied by the loss rate constant, Lambdao.
+        Time step size is divided by the loss rate constant, Lamdao.
+        Stress tensor is divided by NokT.
+    """
+    def __init__(self, si={}, proto_strand=Strand(), strand_mover=None):
+        """
+        Create an object used to run simulation.
+
+        :param si: Dictionary of non-dimensional input values for the simulation as follows:
+            gamdot = shear rate, float
+            begstrand = number of strands in equilibrium ensemble, int
+            eps = time step size, float
+            steps = total time steps, int
+            outfile = file for writing simulation steps output, string
+        """
+        super().__init__(si, proto_strand, strand_mover)
+
+    def _createSimOutObj(self):
+        """
+        Create and return an output object appropriate for this simulation class.
+        :return: An output object appropriate for this simulation class, RheoNetSimOut subclass object
+        """
+        return ShearNetSimOut()
+
+    def _getOutFileHeader(self):
+        """
+        Return a string to write as a header line into the output file, that is, the column headers.
+        :return: String for output file header, that is, the column headers, as string
+        """
+        result = super()._getOutFileHeader()
+        result += f", viscosity, first normal stress coefficient, second normal stress coefficient"
+        return result
+
+    def _computeTimestepOutputs(self, we=None, time_value=0, finalize=False):
+        """
+        Compute output values for a single time step.
+        :param we: Working ensemble at current time step, Ensemble object
+        :param time_value: Current time value, float
+        :param finalize: If True, finalize any calculations needed at the end of the simulation, bool
+                         Typically, this would be used to compute time-averaged values from accumulated sums.
+        :return: None. Output values are appended to the "vals" arrays of the output object.
+        """
+        assert(isinstance(we, Ensemble))
+        super()._computeTimestepOutputs(we, time_value, finalize)
+
+        if not finalize:
+            # Compute and store output values for this time step, and accumulate sums for time-averaged values later
+
+            stress = we.ensemble_stress()
+            viscosity = stress[3] / self.sim_input['begstrand'] / self.sim_input['gamdot']
+            self._sim_output.viscosity_vals.append(viscosity)
+            psi1 = (stress[0] - stress[1]) / self.sim_input['begstrand'] / self.sim_input['gamdot'] / self.sim_input['gamdot']
+            self._sim_output.psi1_vals.append(psi1)
+            psi2 = (stress[1] - stress[2]) / self.sim_input['begstrand'] / self.sim_input['gamdot'] / self.sim_input['gamdot']
+            self._sim_output.psi2_vals.append(psi2)
+
+            # If we are far enough along to assume steady state, store some information into results,
+            # which will later be used to generate time-averaged values
+            if time_value >= self.sim_input['eps']*self.sim_input['steps']*(1.-self._time_frac_ss):
+                self._sim_output.viscosity_ave+=viscosity
+                self._sim_output.psi1_ave+=psi1
+                self._sim_output.psi2_ave+=psi2
+
+        else:
+            # Finalize any calculations needed at the end of the simulation.
+            # Here we will compute time-averaged values from accumulated sums, by dividing by the number of time steps used in the averaging.
+            t_res = round(self.sim_input['steps']*self._time_frac_ss)
+            self._sim_output.viscosity_ave = self._sim_output.viscosity_ave / t_res
+            self._sim_output.psi1_ave = self._sim_output.psi1_ave / t_res
+            self._sim_output.psi2_ave = self._sim_output.psi2_ave / t_res
+
+            # Make a TextPlot object for plotting viscosity vs time
+            _symbol = array('u')
+            _symbol.append('O')
+            _npts=len(self._sim_output.viscosity_vals)
+            _x=[self._sim_output.time_vals]
+            _y=[self._sim_output.viscosity_vals]
+            _titl1='Start-up of Shear Flow Simulation'
+            _titl2='O: Viscosity vs Time'
+            self._sim_output.viscosity_plt = TextPlot(ncur=1, npts=_npts, x=_x, y=_y, symbol=_symbol, titl1=_titl1, titl2=_titl2)
 
         return None
 
@@ -439,6 +585,46 @@ def move_strand_fens_elongational(s, eps, gamdot):
     s.qx = s.qx - alpha * gamdot * .5 * s.qx * eps
     s.qy = s.qy - alpha * gamdot * .5 * s.qy * eps
     s.qz = s.qz + alpha * gamdot * s.qz * eps
+
+    if s.max_length is not None:
+        if sqrt(s.str_len_sqr()) > s.max_length:
+            s.qz = copysign(sqrt(0.9999*s.max_length - s.qy * s.qy - s.qx * s.qx), s.qz)
+
+
+# Appy Euler integration to advance a strand s, one time step eps, under shear rate gamdot.
+def move_strand_fens_shear(s, eps, gamdot):
+    """
+    Apply Euler integration to advance the internal coordinates of a network strand by one time step.
+    :param s: Network Strand to advance, as Strand object
+    :param eps: Time step size, as float
+    :param gamdot: Shear rate, as float
+    :return: None. Strand s's internal coordinates are updated upon return.
+    """
+
+    alpha = 1.0 - pow(sqrt(s.str_len_sqr()/s.max_length), 2.0)
+
+    # Actual movement of the strand by Euler integration
+    s.qx = s.qx + alpha * gamdot * s.qy * eps
+
+    if s.max_length is not None:
+        if sqrt(s.str_len_sqr()) > s.max_length:
+            s.qz = copysign(sqrt(0.9999*s.max_length - s.qy * s.qy - s.qx * s.qx), s.qz)
+
+
+# Appy Euler integration to advance a strand s, one time step eps, under shear rate gamdot.
+def move_strand_fene_shear(s, eps, gamdot):
+    """
+    Apply Euler integration to advance the internal coordinates of a network strand by one time step.
+    :param s: Network Strand to advance, as Strand object
+    :param eps: Time step size, as float
+    :param gamdot: Shear rate, as float
+    :return: None. Strand s's internal coordinates are updated upon return.
+    """
+
+    alpha = 1.0 - pow(sqrt(s.str_len_sqr()), s.n)
+
+    # Actual movement of the strand by Euler integration
+    s.qx = s.qx + alpha * gamdot * s.qy * eps
 
     if s.max_length is not None:
         if sqrt(s.str_len_sqr()) > s.max_length:
