@@ -1,8 +1,8 @@
 """
 This module contains unit tests for:
-    (1) RheoNetSim and ElongateNetSim classes
-    (2) Their associated output classes, RheoNetSimOut and ElongateNetSimOut
-    (3) The move_strand_fene_elongational and move_strand_fens_elongational functions
+    (1) RheoNetSim, ElongateNetSim, and ShearNetSim classes
+    (2) Their associated output classes, RheoNetSimOut, ElongateNetSimOut, ShearNetSimOut
+    (3) The move_strand_fene_elongational, move_strand_fens_elongational, move_strand_fene_shear, and move_strand_fens_shear functions
 """
 
 

@@ -9,9 +9,12 @@ forces and entanglement kinetics," J. Chem. Phys., 1-January-1997, 106(1), pp. 3
 Exported classes:
     RheoNetSim: Base class for simulators of rheology network models in viscometric flows.
     ElongateNetSim: Subclass of RheoNetSim that simulates a network strand model in elongational viscometric flow.
+    ShearNetSim: Subclass of RheoNetSim that simulates a network strand model in shear viscometric flow.
     RheoNetSimOut: Class to accumulate (over time steps) and then return time-averaged output from RheoNetSim.run_sim() method.
     ElongateNetSimOut: Subclass of RheoNetSimOut to accumulate (over time steps) and then return time-averaged output from RheoNetSim.run_sim() method,
                        with additional output values appropriate for elongational flow simulation.
+    ShearNetSimOut: Subclass of RheoNetSimOut to accumulate (over time steps) and then return time-averaged output from RheoNetSim.run_sim() method,
+                    with additional output values appropriate for shear flow simulation.
 
     Note that:
     (1) A XNetSim class uses it's factory method _createSimOutObj() to create the correct type of XSimOut object.
@@ -20,6 +23,8 @@ Exported classes:
 Exported functions:
     move_strand_fene_elongational: Appy Euler integration to advance a FENE strand s, one time step eps, under elongation rate gamdot.
     move_strand_fens_elongational: Appy Euler integration to advance a FENS strand s, one time step eps, under elongation rate gamdot.
+    move_strand_fene_shear: Appy Euler integration to advance a FENE strand s, one time step eps, under shear rate gamdot.
+    move_strand_fens_shear: Appy Euler integration to advance a FENS strand s, one time step eps, under shear rate gamdot.
 
 Exported exceptions:
     None

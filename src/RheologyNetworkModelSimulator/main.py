@@ -7,8 +7,10 @@ Exported classes:
 
 Exported functions:
     __main__: Requests simulation type, collects input, runs simulation, prints results output
-    Fene_Trout: Run an elongatonal flow simulation using the FENE network model.
-    Fens_Trout: Run an elongatonal flow simulation using the FENS network model.
+    Fene_Elongational: Run an elongatonal flow simulation using the FENE network model.
+    Fens_Elongational: Run an elongatonal flow simulation using the FENS network model
+    Fene_Shear: Run a shear flow simulation using the FENE network model.
+    Fens_Shear: Run a shear flow simulation using the FENS network model.
     debug: Run a debugging scenario (currently does nothing).
 
 Exported exceptions:
