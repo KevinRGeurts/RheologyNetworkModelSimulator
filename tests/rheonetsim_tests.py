@@ -408,6 +408,187 @@ class Test_ShearNetSim(unittest.TestCase):
         act_val = sim._getOutFileHeader()
         self.assertEqual(exp_val, act_val)
 
+    def test_computeTimestepOutputs_before_ss(self):
+        fene_b = 100.0 # All results in J. Chem. Phys article
+        fene_n = 2.0 # Don't change
+        fene_mm = 1.0 # Don't change
+        sim_input = {}
+        sim_input['gamdot'] = 10.0
+        sim_input['begstrand'] = 100
+        sim_input['eps'] = 0.001
+        sim_input['steps'] = int(0.01 / sim_input['eps'])
+        sim_input['outfile'] = 'testfeneshear.out'
+        s1 = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=fene_b, n=fene_n, mm=fene_mm)
+        s2 = FENEStrand(qx=0.3, qy=0.1, qz=0.2, b=fene_b, n=fene_n, mm=fene_mm)
+        sim = ShearNetSim(sim_input, s1, move_strand_fene_shear)
+        we = Ensemble([s1, s2])
+        exp_val = ShearNetSimOut()
+        exp_val.n_vals.append(2)
+        exp_val.piYX_vals.append(0.058139535)
+        exp_val.Q_vals.append(0.374165739)
+        exp_val.time_vals.append(0.007)
+        exp_val.viscosity_vals.append(0.005813953)
+        exp_val.psi1_vals.append(0.000581395)
+        exp_val.psi2_vals.append(-0.000930233)
+        exp_val.n_ave = 0
+        exp_val.piYX_ave = 0
+        exp_val.Q_ave = 0
+        exp_val.viscosity_ave = 0
+        exp_val.psi1_ave = 0
+        exp_val.psi2_ave = 0
+        sim._computeTimestepOutputs(we, 0.007)
+        act_val = sim._sim_output
+        self.assertAlmostEqual(exp_val.n_vals[0], act_val.n_vals[0], 9)
+        self.assertAlmostEqual(exp_val.Q_vals[0], act_val.Q_vals[0], 9)
+        self.assertAlmostEqual(exp_val.time_vals[0], act_val.time_vals[0], 9)
+        self.assertAlmostEqual(exp_val.piYX_vals[0], act_val.piYX_vals[0], 9)
+        self.assertAlmostEqual(exp_val.viscosity_vals[0], act_val.viscosity_vals[0], 8)
+        self.assertAlmostEqual(exp_val.psi1_vals[0], act_val.psi1_vals[0], 8)
+        self.assertAlmostEqual(exp_val.psi2_vals[0], act_val.psi2_vals[0], 8)
+        self.assertAlmostEqual(exp_val.n_ave, act_val.n_ave, 9)
+        self.assertAlmostEqual(exp_val.piYX_ave, act_val.piYX_ave, 9)
+        self.assertAlmostEqual(exp_val.Q_ave, act_val.Q_ave, 9)
+        self.assertAlmostEqual(exp_val.viscosity_ave, act_val.viscosity_ave, 8)
+        self.assertAlmostEqual(exp_val.psi1_ave, act_val.psi1_ave, 8)
+        self.assertAlmostEqual(exp_val.psi2_ave, act_val.psi2_ave, 8)
+        
+    def test_computeTimestepOutputs_after_ss(self):
+        fene_b = 100.0 # All results in J. Chem. Phys article
+        fene_n = 2.0 # Don't change
+        fene_mm = 1.0 # Don't change
+        sim_input = {}
+        sim_input['gamdot'] = 10.0
+        sim_input['begstrand'] = 100
+        sim_input['eps'] = 0.001
+        sim_input['steps'] = int(0.01 / sim_input['eps'])
+        sim_input['outfile'] = 'testfeneshear.out'
+        s1 = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=fene_b, n=fene_n, mm=fene_mm)
+        s2 = FENEStrand(qx=0.3, qy=0.1, qz=0.2, b=fene_b, n=fene_n, mm=fene_mm)
+        sim = ShearNetSim(sim_input, s1, move_strand_fene_shear)
+        we = Ensemble([s1, s2])
+        exp_val = ShearNetSimOut()
+        exp_val.n_vals.append(2)
+        exp_val.piYX_vals.append(0.058139535)
+        exp_val.Q_vals.append(0.374165739)
+        exp_val.time_vals.append(0.008)
+        exp_val.viscosity_vals.append(0.005813953)
+        exp_val.psi1_vals.append(0.000581395)
+        exp_val.psi2_vals.append(-0.000930233)
+        exp_val.n_ave = 2/sim_input['begstrand']
+        exp_val.piYX_ave = 0.058139535
+        exp_val.Q_ave = 0.374165739
+        exp_val.viscosity_ave = 0.005813953
+        exp_val.psi1_ave = 0.000581395
+        exp_val.psi2_ave = -0.000930233
+        sim._computeTimestepOutputs(we, 0.008)
+        act_val = sim._sim_output
+        self.assertAlmostEqual(exp_val.n_vals[0], act_val.n_vals[0], 8)
+        self.assertAlmostEqual(exp_val.Q_vals[0], act_val.Q_vals[0], 8)
+        self.assertAlmostEqual(exp_val.time_vals[0], act_val.time_vals[0], 8)
+        self.assertAlmostEqual(exp_val.piYX_vals[0], act_val.piYX_vals[0], 8)
+        self.assertAlmostEqual(exp_val.viscosity_vals[0], act_val.viscosity_vals[0], 8)
+        self.assertAlmostEqual(exp_val.psi1_vals[0], act_val.psi1_vals[0], 8)
+        self.assertAlmostEqual(exp_val.psi2_vals[0], act_val.psi2_vals[0], 8)
+        self.assertAlmostEqual(exp_val.n_ave, act_val.n_ave, 8)
+        self.assertAlmostEqual(exp_val.piYX_ave, act_val.piYX_ave, 8)
+        self.assertAlmostEqual(exp_val.Q_ave, act_val.Q_ave, 8)
+        self.assertAlmostEqual(exp_val.viscosity_ave, act_val.viscosity_ave, 8)
+        self.assertAlmostEqual(exp_val.psi1_ave, act_val.psi1_ave, 8)
+        self.assertAlmostEqual(exp_val.psi2_ave, act_val.psi2_ave, 8)
+
+    def test_computeTimestepOutputs_after_ss_finalize(self):
+        fene_b = 100.0 # All results in J. Chem. Phys article
+        fene_n = 2.0 # Don't change
+        fene_mm = 1.0 # Don't change
+        sim_input = {}
+        sim_input['gamdot'] = 10.0
+        sim_input['begstrand'] = 100
+        sim_input['eps'] = 0.001
+        sim_input['steps'] = int(0.01 / sim_input['eps'])
+        sim_input['outfile'] = 'testfeneshear.out'
+        s1 = FENEStrand(qx=0.1, qy=0.2, qz=0.3, b=fene_b, n=fene_n, mm=fene_mm)
+        s2 = FENEStrand(qx=0.3, qy=0.1, qz=0.2, b=fene_b, n=fene_n, mm=fene_mm)
+        sim = ShearNetSim(sim_input, s1, move_strand_fene_shear)
+        we = Ensemble([s1, s2])
+        exp_val = ShearNetSimOut()
+        exp_val.n_vals.append(2)
+        exp_val.piYX_vals.append(0.058139535)
+        exp_val.Q_vals.append(0.374165739)
+        exp_val.time_vals.append(0.008)
+        exp_val.viscosity_vals.append(0.005813953)
+        exp_val.psi1_vals.append(0.000581395)
+        exp_val.psi2_vals.append(-0.000930233)
+        exp_val.n_ave = 2/sim_input['begstrand']
+        exp_val.piYX_ave = 0.058139535
+        exp_val.Q_ave = 0.374165739
+        exp_val.viscosity_ave = 0.005813953
+        exp_val.psi1_ave = 0.000581395
+        exp_val.psi2_ave = -0.000930233
+        # Manipulate internal state so that data is present when finalize branch is taken
+        sim._sim_output.n_vals.append(2)
+        sim._sim_output.piYX_vals.append(0.058139535)
+        sim._sim_output.Q_vals.append(0.374165739)
+        sim._sim_output.time_vals.append(0.008)
+        sim._sim_output.viscosity_vals.append(0.005813953)
+        sim._sim_output.psi1_vals.append(0.000581395)
+        sim._sim_output.psi2_vals.append(-0.000930233)
+        sim._sim_output.n_ave = exp_val.n_ave
+        sim._sim_output.piYX_ave = exp_val.piYX_ave
+        sim._sim_output.Q_ave = exp_val.Q_ave
+        sim._sim_output.viscosity_ave = exp_val.viscosity_ave
+        sim._sim_output.psi1_ave = exp_val.psi1_ave
+        sim._sim_output.psi2_ave = exp_val.psi2_ave
+        # Now modify exp_val to reflect finalize calculations
+        exp_val.n_ave = exp_val.n_ave/round(0.25*int(0.01 / sim_input['eps']))
+        exp_val.piYX_ave = exp_val.piYX_ave/round(0.25*int(0.01 / sim_input['eps']))
+        exp_val.Q_ave = exp_val.Q_ave/round(0.25*int(0.01 / sim_input['eps']))
+        exp_val.viscosity_ave = exp_val.viscosity_ave/round(0.25*int(0.01 / sim_input['eps']))
+        exp_val.psi1_ave = exp_val.psi1_ave/round(0.25*int(0.01 / sim_input['eps']))  
+        exp_val.psi2_ave = exp_val.psi2_ave/round(0.25*int(0.01 / sim_input['eps']))  
+        # Now call with finalize=True
+        sim._computeTimestepOutputs(we, 0.008, True)
+        act_val = sim._sim_output
+        self.assertAlmostEqual(exp_val.n_vals[0], act_val.n_vals[0], 8)
+        self.assertAlmostEqual(exp_val.Q_vals[0], act_val.Q_vals[0], 8)
+        self.assertAlmostEqual(exp_val.time_vals[0], act_val.time_vals[0], 8)
+        self.assertAlmostEqual(exp_val.piYX_vals[0], act_val.piYX_vals[0], 8)
+        self.assertAlmostEqual(exp_val.viscosity_vals[0], act_val.viscosity_vals[0], 8)
+        self.assertAlmostEqual(exp_val.psi1_vals[0], act_val.psi1_vals[0], 8)
+        self.assertAlmostEqual(exp_val.psi2_vals[0], act_val.psi2_vals[0], 8)
+        self.assertAlmostEqual(exp_val.n_ave, act_val.n_ave, 8)
+        self.assertAlmostEqual(exp_val.piYX_ave, act_val.piYX_ave, 8)
+        self.assertAlmostEqual(exp_val.Q_ave, act_val.Q_ave, 8)
+        self.assertAlmostEqual(exp_val.viscosity_ave, act_val.viscosity_ave, 8)
+        self.assertAlmostEqual(exp_val.psi1_ave, act_val.psi1_ave, 8)
+        self.assertAlmostEqual(exp_val.psi2_ave, act_val.psi2_ave, 8)
+
+    def test_run_sim_shear_fene(self):
+        seed(1234567890)
+
+        exp_val = {'Qave': 0.16042999856485168, 'n/no': 0.99, 'piYX': 0.1599407793085043, 'viscosity': 0.015994077930850434, 'psi1': -3.6169842793938044e-05, 'psi2': -0.0016908674167038953}
+
+        fene_b = 100.0 # All results in J. Chem. Phys article
+        fene_n = 2.0 # Don't change
+        fene_mm = 1.0 # Don't change
+
+        sim_input = {}
+        sim_input['gamdot'] = 10.0
+        sim_input['begstrand'] = 100
+        sim_input['eps'] = 0.001
+        sim_input['steps'] = int(0.01 / sim_input['eps'])
+        sim_input['outfile'] = 'testfenetrout.out'
+
+        _proto_strand = FENEStrand(qx=0, qy=0, qz=0, b=fene_b, n=fene_n, mm=fene_mm)
+        sim = ShearNetSim(sim_input, _proto_strand, move_strand_fene_shear)
+        act_val = sim.run_sim()
+        print(act_val)
+        self.assertAlmostEqual(exp_val['Qave'], act_val.Q_ave, 15)
+        self.assertAlmostEqual(exp_val['n/no'], act_val.n_ave, 15)
+        self.assertAlmostEqual(exp_val['piYX'], act_val.piYX_ave,15)
+        self.assertAlmostEqual(exp_val['viscosity'], act_val.viscosity_ave, 15)
+        self.assertAlmostEqual(exp_val['psi1'], act_val.psi1_ave, 15)
+        self.assertAlmostEqual(exp_val['psi2'], act_val.psi2_ave, 15)
+
 
 if __name__ == '__main__':
     unittest.main()
