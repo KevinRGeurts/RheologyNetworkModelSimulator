@@ -8,14 +8,14 @@ source-includes = ["tests/", "src/RheologyNetworkModelSimulator/Documentation/De
 
 [project]
 name = "RheologyNetworkModelSimulator"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
 	"UserResponseCollector>=1.1.0",
 ]
 authors = [
   { name="Kevin R. Geurts", email="kevin.r.geurts@gmail.com" },
 ]
-description = "RheologyNetworkModelSimulator simulates FENE (finitely extensible non-linear elastic) and FENS (Finitely Extensible Network Strand) network models for polymer melt rheology in elongational viscometric flow."
+description = "RheologyNetworkModelSimulator simulates FENE (finitely extensible non-linear elastic) and FENS (Finitely Extensible Network Strand) network models for polymer melt rheology in shear and elongational viscometric flows."
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
