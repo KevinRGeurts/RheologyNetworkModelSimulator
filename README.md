@@ -3,8 +3,8 @@
 Source code: [GitHub](https://github.com/KevinRGeurts/RheologyNetworkModelSimulator)
 ---
 RheologyNetworkModelSimulator is a python implementation of a rheology simulator for polymer network models. In the current version it can
-can simulate the FENE (finitely extensible non-linear elastic) network model in elongational viscometric flow,
-and the FENS (finitely extensible network strand) network model in elongational viscometric flow.
+can simulate the FENE (finitely extensible non-linear elastic) network model in elongational and shear viscometric flows,
+and the FENS (finitely extensible network strand) network model in elongational and shear viscometric flows.
 
 The FENE network model is based on the work of Geurts and Wedgewood (1997).
 The FENS network model is based on the work of Wedgewood and Geurts (1995).
